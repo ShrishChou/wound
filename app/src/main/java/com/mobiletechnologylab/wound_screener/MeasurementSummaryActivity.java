@@ -1,4 +1,4 @@
-package com.mobiletechnologylab.ncscreenerv2;
+package com.mobiletechnologylab.wound_screener;
 
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.AllOf;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.GPS;

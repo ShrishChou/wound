@@ -1,4 +1,4 @@
-package com.mobiletechnologylab.ncscreenerv2;
+package com.mobiletechnologylab.wound_screener;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

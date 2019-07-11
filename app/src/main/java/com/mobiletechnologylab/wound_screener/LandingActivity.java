@@ -1,13 +1,13 @@
-package com.mobiletechnologylab.ncscreenerv2;
+package com.mobiletechnologylab.wound_screener;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import com.mobiletechnologylab.storagelib.malnutrition.activities.BaseMalnutritionLandingActivity;
-import com.mobiletechnologylab.storagelib.malnutrition.activities.PatientProfileActivity;
-import com.mobiletechnologylab.storagelib.malnutrition.tables.measurements.LocalMetadata.MeasurementType;
 import com.mobiletechnologylab.storagelib.pulmonary.activities.NoOpActivity;
+import com.mobiletechnologylab.storagelib.wound.activities.BaseWoundLandingActivity;
+import com.mobiletechnologylab.storagelib.wound.activities.PatientProfileActivity;
+import com.mobiletechnologylab.storagelib.wound.tables.measurements.LocalMetadata.MeasurementType;
 
-public class LandingActivity extends BaseMalnutritionLandingActivity {
+public class LandingActivity extends BaseWoundLandingActivity {
 
     @Override
     protected Drawable getLogo() {
