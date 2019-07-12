@@ -103,6 +103,61 @@
       android:orientation="vertical">
 
       <RelativeLayout
+        android:id="@+id/woundQuestionnaireContainerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="77dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
+
+        <ImageView
+          android:id="@+id/statusIndicatorWoundQuestionnaireImageView"
+          android:layout_width="50dp"
+          android:layout_height="20dp"
+          android:layout_alignParentLeft="true"
+          android:layout_alignParentStart="true"
+          android:layout_centerVertical="true"
+          android:src="@android:drawable/presence_invisible"/>
+
+        <FrameLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerVertical="true"
+          android:layout_toEndOf="@+id/statusIndicatorWoundQuestionnaireImageView"
+          android:layout_toRightOf="@+id/statusIndicatorWoundQuestionnaireImageView">
+
+          <TextView
+            android:id="@+id/woundQuestionnaireAppNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/statusIndicatorWoundQuestionnaireImageView"
+            android:layout_toRightOf="@+id/statusIndicatorWoundQuestionnaireImageView"
+            android:text="Questionnaire"
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
+        </FrameLayout>
+
+        <Button
+          android:id="@+id/woundQuestionnaireBtn"
+          style="@android:style/Widget.Material.Light.Button.Inset"
+          android:layout_width="150dp"
+          android:layout_height="match_parent"
+          android:layout_marginRight="10dp"
+          android:layout_alignParentBottom="true"
+          android:layout_alignParentEnd="true"
+          android:layout_alignParentRight="true"
+          android:layout_alignParentTop="true"
+          android:backgroundTintMode="multiply"
+          android:text="Start"
+          android:textAppearance="@android:style/TextAppearance.Medium"/>
+      </RelativeLayout>
+
+
+      <RelativeLayout
         android:id="@+id/woundContainerLayout"
         android:layout_width="match_parent"
         android:layout_height="77dp"
@@ -212,59 +267,6 @@
       </RelativeLayout>
 
 
-      <RelativeLayout
-        android:id="@+id/woundQuestionnaireContainerLayout"
-        android:layout_width="match_parent"
-        android:layout_height="77dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:orientation="vertical">
-
-        <ImageView
-          android:id="@+id/statusIndicatorWoundQuestionnaireImageView"
-          android:layout_width="50dp"
-          android:layout_height="20dp"
-          android:layout_alignParentLeft="true"
-          android:layout_alignParentStart="true"
-          android:layout_centerVertical="true"
-          android:src="@android:drawable/presence_invisible"/>
-
-        <FrameLayout
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_centerVertical="true"
-          android:layout_toEndOf="@+id/statusIndicatorWoundQuestionnaireImageView"
-          android:layout_toRightOf="@+id/statusIndicatorWoundQuestionnaireImageView">
-
-          <TextView
-            android:id="@+id/woundQuestionnaireAppNameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/statusIndicatorWoundQuestionnaireImageView"
-            android:layout_toRightOf="@+id/statusIndicatorWoundQuestionnaireImageView"
-            android:text="Questionnaire"
-            android:textAppearance="@android:style/TextAppearance.Medium"/>
-        </FrameLayout>
-
-        <Button
-          android:id="@+id/woundQuestionnaireBtn"
-          style="@android:style/Widget.Material.Light.Button.Inset"
-          android:layout_width="150dp"
-          android:layout_height="match_parent"
-          android:layout_marginRight="10dp"
-          android:layout_alignParentBottom="true"
-          android:layout_alignParentEnd="true"
-          android:layout_alignParentRight="true"
-          android:layout_alignParentTop="true"
-          android:backgroundTintMode="multiply"
-          android:text="Start"
-          android:textAppearance="@android:style/TextAppearance.Medium"/>
-      </RelativeLayout>
 
 
       <RelativeLayout

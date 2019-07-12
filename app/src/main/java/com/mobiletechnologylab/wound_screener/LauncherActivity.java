@@ -40,9 +40,9 @@ import com.mobiletechnologylab.storagelib.wound.tables.measurements.LocalMeasure
 import com.mobiletechnologylab.storagelib.wound.tables.measurements.LocalMetadata;
 import com.mobiletechnologylab.storagelib.wound.tables.measurements.MeasurementDbRow;
 
-public class MeasurementSummaryActivity extends AppCompatActivity {
+public class LauncherActivity extends AppCompatActivity {
 
-    private static final String TAG = MeasurementSummaryActivity.class.getSimpleName();
+    private static final String TAG = LauncherActivity.class.getSimpleName();
     private static final int WOUND_ASSESSMENT_REQ_CODE = 424;
     private static final int WOUND_QUESTIONNAIRE_REQ_CODE = 425;
 
@@ -227,7 +227,7 @@ public class MeasurementSummaryActivity extends AppCompatActivity {
 
     private void handleMissingApp(final String packageNameForIfMissing) {
         // 1. Instantiate an AlertDialog.Builder with its constructor
-        AlertDialog.Builder builder = new AlertDialog.Builder(MeasurementSummaryActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(LauncherActivity.this);
         String dialogMessage = getString(R.string.missing_app_dialog_message);
         String dialogTitle = getString(R.string.missing_app_dialog_title);
         // 2. Chain together various setter methods to set the dialog characteristics

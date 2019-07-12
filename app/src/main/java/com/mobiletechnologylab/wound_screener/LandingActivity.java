@@ -16,13 +16,13 @@ public class LandingActivity extends BaseWoundLandingActivity {
 
     @Override
     protected void goToScreeningAnonymously(int requestCode) {
-        startActivityForResult(new Intent(this, MeasurementSummaryActivity.class),
+        startActivityForResult(new Intent(this, LauncherActivity.class),
                 requestCode);
     }
 
     @Override
     protected void goToScreeningActivity(int requestCode) {
-        startActivityForResult(new Intent(this, MeasurementSummaryActivity.class),
+        startActivityForResult(new Intent(this, LauncherActivity.class),
                 requestCode);
     }
 

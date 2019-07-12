@@ -33,7 +33,7 @@
     <activity
       android:label="Measurements"
       android:screenOrientation="portrait"
-      android:name="com.mobiletechnologylab.wound_screener.MeasurementSummaryActivity"/>
+      android:name="com.mobiletechnologylab.wound_screener.LauncherActivity"/>
 
     <activity
       android:label="Questionnaire"
