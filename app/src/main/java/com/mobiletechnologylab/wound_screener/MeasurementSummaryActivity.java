@@ -1,5 +1,7 @@
 package com.mobiletechnologylab.wound_screener;
 
+import static com.mobiletechnologylab.apilib.apis.common.ApiDispatcherUtils.GSON;
+import static com.mobiletechnologylab.apilib.apis.common.ToastUtils.toast;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.AllOf;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.GPS;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.STORAGE;
@@ -20,32 +22,39 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import com.mobiletechnologylab.apilib.apis.common.ApiDispatcherUtils;
 import com.mobiletechnologylab.apilib.apis.common.ApiSettings;
+import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.common.Metadata;
+import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_questionnaire.PostRequest;
+import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_questionnaire.PostRequest.DiagnosticMeasurement;
+import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_questionnaire.PostRequest.WoundQuestionnaire;
+import com.mobiletechnologylab.storagelib.diabetes.tables.measurements.LocalMetadata.MeasurementType;
 import com.mobiletechnologylab.storagelib.diabetes.tables.patient_profiles.PatientProfileDbRow;
 import com.mobiletechnologylab.storagelib.diabetes.tables.patient_profiles.PatientProfileDbRowInfo;
-import com.mobiletechnologylab.storagelib.malnutrition.MalnutritionDb;
 import com.mobiletechnologylab.storagelib.utils.ContainerAppUtils;
 import com.mobiletechnologylab.storagelib.utils.DbUtils;
 import com.mobiletechnologylab.storagelib.utils.PermissionsHandler;
 import com.mobiletechnologylab.storagelib.utils.StorageSettings;
+import com.mobiletechnologylab.storagelib.wound.WoundDb;
+import com.mobiletechnologylab.storagelib.wound.tables.measurements.LocalMeasurement;
+import com.mobiletechnologylab.storagelib.wound.tables.measurements.LocalMetadata;
+import com.mobiletechnologylab.storagelib.wound.tables.measurements.MeasurementDbRow;
 
 public class MeasurementSummaryActivity extends AppCompatActivity {
 
     private static final String TAG = MeasurementSummaryActivity.class.getSimpleName();
-    private static final int MUAC_REQUEST_CODE = 424;
+    private static final int WOUND_ASSESSMENT_REQ_CODE = 424;
+    private static final int WOUND_QUESTIONNAIRE_REQ_CODE = 425;
 
 
     private static final String QCONTAINER_APP_ENTRY = ".ContainerAppEntryActivity";
-    private static final String MUAC_PACKAGE = ApiSettings.MUAC_PACKAGE;
+    private static final String WOUND_VISIBLE_IMAGE_PKG = ApiSettings.WOUND_ASSESSMENT_PACKAGE;
 
-    private static final String MUAC_ACTIVITY =
-            MUAC_PACKAGE + QCONTAINER_APP_ENTRY;
-
-    private static final String PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=";
-    private static final String PLAY_STORE_APP = "https://play.google.com/store/apps/details?id=";
+    private static final String WOUND_ACTIVITY =
+            WOUND_VISIBLE_IMAGE_PKG + QCONTAINER_APP_ENTRY;
 
     PermissionsHandler requiredPermissions;
-    MalnutritionDb db;
+    WoundDb db;
     PatientProfileDbRow patientDbRow;
     PatientProfileDbRowInfo pInfo = new PatientProfileDbRowInfo();
     StorageSettings storageSettings;
@@ -74,7 +83,7 @@ public class MeasurementSummaryActivity extends AppCompatActivity {
         super.onStart();
         requiredPermissions = new PermissionsHandler(this, AllOf(GPS, STORAGE), () -> {
             if (DbUtils.isDataDbAvailable(this)) {
-                db = MalnutritionDb.getInstance(this);
+                db = WoundDb.getInstance(this);
             }
 
             AsyncTask.execute(() -> {
@@ -86,8 +95,7 @@ public class MeasurementSummaryActivity extends AppCompatActivity {
                 }
                 Log.v(TAG, "pInfo: " + pInfo);
                 runOnUiThread(() -> {
-                    ((EditText) findViewById(R.id.patientIdEt)).setText("" + pInfo.getLocalId());
-                    ((EditText) findViewById(R.id.patientNameEt)).setText(pInfo.getName());
+                    ((EditText) findViewById(R.id.patientIdEt)).setText(pInfo.getUsername());
                     setOnClickListeners();
                 });
             });
@@ -103,18 +111,68 @@ public class MeasurementSummaryActivity extends AppCompatActivity {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.v(TAG, "Got result back. RequestCode=" + requestCode + ". resultcode: " + resultCode);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == MUAC_REQUEST_CODE) {
-                setUIResult(R.id.muacBtn);
-                ImageView questionnaireStatus = (ImageView) findViewById(
-                        R.id.statusIndicatorMuacImageView);
-                questionnaireStatus.setImageResource(android.R.drawable.presence_online);
-            }
+        if (resultCode != RESULT_OK) {
+            return;
         }
+
+        if (requestCode == WOUND_ASSESSMENT_REQ_CODE) {
+            setUIResult(R.id.woundVisibleImageBtn, R.id.statusIndicatorWoundImageView);
+            return;
+        }
+
+        if (requestCode == WOUND_QUESTIONNAIRE_REQ_CODE) {
+            setUIResult(R.id.woundQuestionnaireBtn,
+                    R.id.statusIndicatorWoundQuestionnaireImageView);
+            WoundQuestionnaire answers = GSON
+                    .fromJson(data.getStringExtra(ScreeningActivity.RESULT_ANSWERS),
+                            WoundQuestionnaire.class);
+            saveQuestionnaireAnswersToDb(answers);
+            return;
+        }
+
     }
 
-    private void setUIResult(int measurementWidgetId) {
-        Button measurementBtn = (Button) findViewById(measurementWidgetId);
+    private void saveQuestionnaireAnswersToDb(WoundQuestionnaire answers) {
+        LocalMeasurement measurement = new LocalMeasurement.Builder()
+                .setWoundQuestionnaire(new PostRequest.Builder()
+                        .setPatientId(pInfo.getServerId())
+                        .setUsergroupId(storageSettings.getApiSettings().getActiveUserGroupId())
+                        .setMeasurement(new DiagnosticMeasurement.Builder()
+                                .setMetadata(new Metadata.Builder()
+                                        .setRecordedOn(
+                                                ApiDispatcherUtils.dateTimeInServerFormat())
+                                        .setClientType(ApiDispatcherUtils.getClientType())
+                                        .setClientId(
+                                                ApiDispatcherUtils.getClientId(this))
+                                        .setClientVersion(
+                                                ApiDispatcherUtils
+                                                        .getClientVersion(this))
+                                        .setGpsLatitude(0d)
+                                        .setGpsLongitude(0d)
+                                        .createMetadata())
+                                .setWoundQuestionnaire(answers)
+                                .createDiagnosticMeasurement())
+                        .createPostRequest())
+                .createLocalMeasurement();
+
+        LocalMetadata metadata = new LocalMetadata.Builder()
+                .setMeasurementType(MeasurementType.QUESTIONNAIRE.name())
+                .setLocalClinicianIdAtCreation(storageSettings.getLoggedInClinicianLocalId())
+                .setLocalPatientIdAtCreation(pInfo.getLocalId())
+                .setServerPatientId(pInfo.getServerId())
+                .createLocalMetadata();
+
+        AsyncTask.execute(() -> {
+            db.measurements().insert(new MeasurementDbRow(measurement, metadata));
+            runOnUiThread(() -> {
+                toast(this, "Questionnaire Save successful");
+                setResult(RESULT_OK);
+            });
+        });
+    }
+
+    private void setUIResult(int measurementWidgetId, int presenceId) {
+        Button measurementBtn = findViewById(measurementWidgetId);
         Drawable weightDrawable = measurementBtn.getBackground();
         weightDrawable = DrawableCompat.wrap(weightDrawable);
         DrawableCompat
@@ -122,15 +180,23 @@ public class MeasurementSummaryActivity extends AppCompatActivity {
         weightDrawable = DrawableCompat.unwrap(weightDrawable);
         measurementBtn.setBackground(weightDrawable);
         measurementBtn.setText("Completed");
+
+        ImageView status = findViewById(presenceId);
+        status.setImageResource(android.R.drawable.presence_online);
     }
 
     private void setOnClickListeners() {
-        Bundle muacParams = new Bundle();
-        markWithContainerParams(muacParams);
+        Bundle containerAppParams = new Bundle();
+        markWithContainerParams(containerAppParams);
 
-        setOnClickListenerForMeasurements(R.id.muacBtn,
-                MUAC_PACKAGE, MUAC_ACTIVITY,
-                MUAC_REQUEST_CODE, muacParams);
+        setOnClickListenerForMeasurements(R.id.woundVisibleImageBtn,
+                WOUND_VISIBLE_IMAGE_PKG, WOUND_ACTIVITY,
+                WOUND_ASSESSMENT_REQ_CODE, containerAppParams);
+
+        findViewById(R.id.woundQuestionnaireBtn).setOnClickListener(v -> {
+            startActivityForResult(new Intent(this, ScreeningActivity.class),
+                    WOUND_QUESTIONNAIRE_REQ_CODE);
+        });
 
         Button doneBtn = findViewById(R.id.doneBtn);
         doneBtn.setOnClickListener(v -> finish());

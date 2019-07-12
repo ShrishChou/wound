@@ -13,59 +13,31 @@
     android:layout_height="wrap_content">
 
     <TextView
-      android:id="@+id/patientNameLabelTv"
+      android:id="@+id/patientIdLabelTv"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginTop="8dp"
-      android:text="Patient Name"
-      android:textAppearance="@android:style/TextAppearance.Small"/>
-
-    <LinearLayout
-      android:id="@+id/patientNameContainerLayout"
-      android:layout_width="wrap_content"
-      android:layout_height="40dp"
-      android:layout_alignLeft="@+id/patientNameLabelTv"
-      android:layout_alignStart="@+id/patientNameLabelTv"
-      android:layout_below="@+id/patientNameLabelTv"
-      android:orientation="horizontal">
-
-      <EditText
-        android:id="@+id/patientNameEt"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:ems="10"
-        android:enabled="false"
-        android:inputType="number"
-        android:maxLines="1"/>
-    </LinearLayout>
-
-    <TextView
-      android:id="@+id/patientIdLabelTextView"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignStart="@+id/patientNameContainerLayout"
-      android:layout_below="@+id/patientNameContainerLayout"
-      android:text="Baby ID"
+      android:text="Patient ID"
       android:textAppearance="@android:style/TextAppearance.Small"/>
 
     <LinearLayout
       android:id="@+id/patientIdContainerLayout"
       android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignStart="@+id/patientIdLabelTextView"
-      android:layout_below="@+id/patientIdLabelTextView"
+      android:layout_height="40dp"
+      android:layout_alignLeft="@+id/patientIdLabelTv"
+      android:layout_alignStart="@+id/patientIdLabelTv"
+      android:layout_below="@+id/patientIdLabelTv"
       android:orientation="horizontal">
 
       <EditText
         android:id="@+id/patientIdEt"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_weight="0.31"
         android:ems="10"
         android:enabled="false"
         android:maxLines="1"/>
-
     </LinearLayout>
+
 
     <ImageView
       android:id="@+id/imageView"
@@ -85,9 +57,9 @@
       android:layout_height="wrap_content"
       android:layout_above="@+id/patientIdContainerLayout"
       android:layout_alignTop="@+id/patientNameLabelTv"
-      android:layout_toEndOf="@+id/patientNameContainerLayout"
+      android:layout_toEndOf="@+id/patientIdContainerLayout"
       android:layout_toLeftOf="@+id/imageView"
-      android:layout_toRightOf="@+id/patientNameContainerLayout"
+      android:layout_toRightOf="@+id/patientIdContainerLayout"
       android:layout_toStartOf="@+id/imageView"
       android:gravity="center_vertical"
       android:visibility="gone">
@@ -131,7 +103,7 @@
       android:orientation="vertical">
 
       <RelativeLayout
-        android:id="@+id/muacContainerLayout"
+        android:id="@+id/woundContainerLayout"
         android:layout_width="match_parent"
         android:layout_height="77dp"
         android:layout_alignParentLeft="true"
@@ -143,7 +115,7 @@
         android:orientation="vertical">
 
         <ImageView
-          android:id="@+id/statusIndicatorMuacImageView"
+          android:id="@+id/statusIndicatorWoundImageView"
           android:layout_width="50dp"
           android:layout_height="20dp"
           android:layout_alignParentLeft="true"
@@ -155,22 +127,187 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_centerVertical="true"
-          android:layout_toEndOf="@+id/statusIndicatorMuacImageView"
-          android:layout_toRightOf="@+id/statusIndicatorMuacImageView">
+          android:layout_toEndOf="@+id/statusIndicatorWoundImageView"
+          android:layout_toRightOf="@+id/statusIndicatorWoundImageView">
 
           <TextView
-            android:id="@+id/muacAppNameTextView"
+            android:id="@+id/woundAppNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/statusIndicatorMuacImageView"
-            android:layout_toRightOf="@+id/statusIndicatorMuacImageView"
-            android:text="MUAC"
+            android:layout_toEndOf="@+id/statusIndicatorWoundImageView"
+            android:layout_toRightOf="@+id/statusIndicatorWoundImageView"
+            android:text="Visible Image"
             android:textAppearance="@android:style/TextAppearance.Medium"/>
         </FrameLayout>
 
         <Button
-          android:id="@+id/muacBtn"
+          android:id="@+id/woundVisibleImageBtn"
+          style="@android:style/Widget.Material.Light.Button.Inset"
+          android:layout_width="150dp"
+          android:layout_height="match_parent"
+          android:layout_marginRight="10dp"
+          android:layout_alignParentBottom="true"
+          android:layout_alignParentEnd="true"
+          android:layout_alignParentRight="true"
+          android:layout_alignParentTop="true"
+          android:backgroundTintMode="multiply"
+          android:text="Start"
+          android:textAppearance="@android:style/TextAppearance.Medium"/>
+      </RelativeLayout>
+
+
+      <RelativeLayout
+        android:id="@+id/woundThermalContainerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="77dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
+
+        <ImageView
+          android:id="@+id/statusIndicatorWoundThermalImageView"
+          android:layout_width="50dp"
+          android:layout_height="20dp"
+          android:layout_alignParentLeft="true"
+          android:layout_alignParentStart="true"
+          android:layout_centerVertical="true"
+          android:src="@android:drawable/presence_invisible"/>
+
+        <FrameLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerVertical="true"
+          android:layout_toEndOf="@+id/statusIndicatorWoundThermalImageView"
+          android:layout_toRightOf="@+id/statusIndicatorWoundThermalImageView">
+
+          <TextView
+            android:id="@+id/woundThermalAppNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/statusIndicatorWoundThermalImageView"
+            android:layout_toRightOf="@+id/statusIndicatorWoundThermalImageView"
+            android:text="Thermal Image"
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
+        </FrameLayout>
+
+        <Button
+          android:id="@+id/woundThermalBtn"
+          style="@android:style/Widget.Material.Light.Button.Inset"
+          android:layout_width="150dp"
+          android:layout_height="match_parent"
+          android:layout_marginRight="10dp"
+          android:layout_alignParentBottom="true"
+          android:layout_alignParentEnd="true"
+          android:layout_alignParentRight="true"
+          android:layout_alignParentTop="true"
+          android:backgroundTintMode="multiply"
+          android:text="Start"
+          android:textAppearance="@android:style/TextAppearance.Medium"/>
+      </RelativeLayout>
+
+
+      <RelativeLayout
+        android:id="@+id/woundQuestionnaireContainerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="77dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
+
+        <ImageView
+          android:id="@+id/statusIndicatorWoundQuestionnaireImageView"
+          android:layout_width="50dp"
+          android:layout_height="20dp"
+          android:layout_alignParentLeft="true"
+          android:layout_alignParentStart="true"
+          android:layout_centerVertical="true"
+          android:src="@android:drawable/presence_invisible"/>
+
+        <FrameLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerVertical="true"
+          android:layout_toEndOf="@+id/statusIndicatorWoundQuestionnaireImageView"
+          android:layout_toRightOf="@+id/statusIndicatorWoundQuestionnaireImageView">
+
+          <TextView
+            android:id="@+id/woundQuestionnaireAppNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/statusIndicatorWoundQuestionnaireImageView"
+            android:layout_toRightOf="@+id/statusIndicatorWoundQuestionnaireImageView"
+            android:text="Questionnaire"
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
+        </FrameLayout>
+
+        <Button
+          android:id="@+id/woundQuestionnaireBtn"
+          style="@android:style/Widget.Material.Light.Button.Inset"
+          android:layout_width="150dp"
+          android:layout_height="match_parent"
+          android:layout_marginRight="10dp"
+          android:layout_alignParentBottom="true"
+          android:layout_alignParentEnd="true"
+          android:layout_alignParentRight="true"
+          android:layout_alignParentTop="true"
+          android:backgroundTintMode="multiply"
+          android:text="Start"
+          android:textAppearance="@android:style/TextAppearance.Medium"/>
+      </RelativeLayout>
+
+
+      <RelativeLayout
+        android:id="@+id/redCapContainerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="77dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
+
+        <ImageView
+          android:id="@+id/statusIndicatorRedCapImageView"
+          android:layout_width="50dp"
+          android:layout_height="20dp"
+          android:layout_alignParentLeft="true"
+          android:layout_alignParentStart="true"
+          android:layout_centerVertical="true"
+          android:src="@android:drawable/presence_invisible"/>
+
+        <FrameLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerVertical="true"
+          android:layout_toEndOf="@+id/statusIndicatorRedCapImageView"
+          android:layout_toRightOf="@+id/statusIndicatorRedCapImageView">
+
+          <TextView
+            android:id="@+id/redCapAppNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/statusIndicatorRedCapImageView"
+            android:layout_toRightOf="@+id/statusIndicatorRedCapImageView"
+            android:text="Open RedCap"
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
+        </FrameLayout>
+
+        <Button
+          android:id="@+id/openRedCapBtn"
           style="@android:style/Widget.Material.Light.Button.Inset"
           android:layout_width="150dp"
           android:layout_height="match_parent"
