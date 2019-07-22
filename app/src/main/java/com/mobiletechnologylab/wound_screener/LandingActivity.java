@@ -11,7 +11,7 @@ public class LandingActivity extends BaseWoundLandingActivity {
 
     @Override
     protected Drawable getLogo() {
-        return getResources().getDrawable(R.drawable.ws_logo);
+        return getResources().getDrawable(R.drawable.logo);
     }
 
     @Override
