@@ -2,6 +2,7 @@ package com.mobiletechnologylab.wound_screener;
 
 import static com.mobiletechnologylab.apilib.apis.common.ApiDispatcherUtils.GSON;
 import static com.mobiletechnologylab.apilib.apis.common.ToastUtils.toast;
+import static com.mobiletechnologylab.storagelib.utils.FolderStructure.getWoundThermalMeasurementsDir;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.AllOf;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.GPS;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.STORAGE;
@@ -28,6 +29,7 @@ import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.com
 import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_questionnaire.PostRequest;
 import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_questionnaire.PostRequest.DiagnosticMeasurement;
 import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_questionnaire.PostRequest.WoundQuestionnaire;
+import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_thermal_image.PostRequest.WoundThermalImage;
 import com.mobiletechnologylab.storagelib.diabetes.tables.measurements.LocalMetadata.MeasurementType;
 import com.mobiletechnologylab.storagelib.diabetes.tables.patient_profiles.PatientProfileDbRow;
 import com.mobiletechnologylab.storagelib.diabetes.tables.patient_profiles.PatientProfileDbRowInfo;
@@ -38,20 +40,29 @@ import com.mobiletechnologylab.storagelib.utils.StorageSettings;
 import com.mobiletechnologylab.storagelib.wound.WoundDb;
 import com.mobiletechnologylab.storagelib.wound.tables.measurements.LocalMeasurement;
 import com.mobiletechnologylab.storagelib.wound.tables.measurements.LocalMetadata;
+import com.mobiletechnologylab.storagelib.wound.tables.measurements.LocalMetadata.WoundThermalImageMeasurementMeta;
 import com.mobiletechnologylab.storagelib.wound.tables.measurements.MeasurementDbRow;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class LauncherActivity extends AppCompatActivity {
 
     private static final String TAG = LauncherActivity.class.getSimpleName();
     private static final int WOUND_ASSESSMENT_REQ_CODE = 424;
     private static final int WOUND_QUESTIONNAIRE_REQ_CODE = 425;
+    private static final int WOUND_THERMAL_REQ_CODE = 426;
 
 
     private static final String QCONTAINER_APP_ENTRY = ".ContainerAppEntryActivity";
     private static final String WOUND_VISIBLE_IMAGE_PKG = ApiSettings.WOUND_ASSESSMENT_PACKAGE;
+    private static final String WOUND_THERMAL_IMAGE_PKG = "com.mobiletechnologylab.thermalscreener";
 
-    private static final String WOUND_ACTIVITY =
+    private static final String WOUND_VISIBLE_ACTIVITY =
             WOUND_VISIBLE_IMAGE_PKG + QCONTAINER_APP_ENTRY;
+    private static final String WOUND_THERMAL_ACTIVITY =
+            WOUND_THERMAL_IMAGE_PKG + QCONTAINER_APP_ENTRY;
 
     PermissionsHandler requiredPermissions;
     WoundDb db;
@@ -130,7 +141,73 @@ public class LauncherActivity extends AppCompatActivity {
             return;
         }
 
+        if (requestCode == WOUND_THERMAL_REQ_CODE) {
+            setUIResult(R.id.woundThermalBtn, R.id.statusIndicatorWoundThermalImageView);
+            saveThermalDataToDb(data);
+            return;
+        }
+
     }
+
+
+    private static final String ARG_THERMAL_IMAGE_PATH = "Arg:ThermalImage";
+    private static final String ARG_THERMAL_CSV_PATH = "Arg:ThermalCsv";
+    private static final String RESULT_THERMAL_IMAGE_PATH = "Res:ThermalImage";
+    private static final String RESULT_THERMAL_CSV_PATH = "Res:ThermalCsv";
+
+    public static final SimpleDateFormat THERMAL_DATE_FMT = new SimpleDateFormat(
+            "yyyy.MM.dd.HH.mm.ss", Locale.US);
+
+    private void saveThermalDataToDb(Intent data) {
+        LocalMetadata metadata = new LocalMetadata.Builder()
+                .setMeasurementType(LocalMetadata.MeasurementType.THERMAL_IMAGE.name())
+                .setLocalClinicianIdAtCreation(storageSettings.getLoggedInClinicianLocalId())
+                .setLocalPatientIdAtCreation(pInfo.getLocalId())
+                .setServerPatientId(pInfo.getServerId())
+                .setWoundThermalImageMeasurementMeta(
+                        new WoundThermalImageMeasurementMeta(
+                                data.getStringExtra(RESULT_THERMAL_IMAGE_PATH)))
+                .createLocalMetadata();
+
+        LocalMeasurement local = new LocalMeasurement.Builder()
+                .setWoundThermalImage(
+                        new com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_thermal_image.PostRequest.Builder()
+                                .setPatientId(pInfo.getServerId())
+                                .setUsergroupId(
+                                        storageSettings.getApiSettings().getActiveUserGroupId())
+                                .setMeasurement(
+                                        new com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_thermal_image.PostRequest.DiagnosticMeasurement.Builder()
+                                                .setWoundThermalImage(
+                                                        new WoundThermalImage(
+                                                                data.getStringExtra(
+                                                                        RESULT_THERMAL_IMAGE_PATH),
+                                                                data.getStringExtra(
+                                                                        RESULT_THERMAL_CSV_PATH),
+                                                                null))
+                                                .setMetadata(new Metadata.Builder()
+                                                        .setRecordedOn(
+                                                                ApiDispatcherUtils
+                                                                        .dateTimeInServerFormat())
+                                                        .setClientType(
+                                                                ApiDispatcherUtils.getClientType())
+                                                        .setClientId(
+                                                                ApiDispatcherUtils
+                                                                        .getClientId(this))
+                                                        .setClientVersion(
+                                                                ApiDispatcherUtils
+                                                                        .getClientVersion(this))
+                                                        .setGpsLatitude(0d)
+                                                        .setGpsLongitude(0d)
+                                                        .createMetadata())
+                                                .createDiagnosticMeasurement())
+                                .createPostRequest())
+                .createLocalMeasurement();
+        AsyncTask.execute(() -> {
+            db.measurements().insert(new MeasurementDbRow(local, metadata));
+            runOnUiThread(() -> toast(this, "Thermal data saved"));
+        });
+    }
+
 
     private void saveQuestionnaireAnswersToDb(WoundQuestionnaire answers) {
         LocalMeasurement measurement = new LocalMeasurement.Builder()
@@ -190,13 +267,27 @@ public class LauncherActivity extends AppCompatActivity {
         markWithContainerParams(containerAppParams);
 
         setOnClickListenerForMeasurements(R.id.woundVisibleImageBtn,
-                WOUND_VISIBLE_IMAGE_PKG, WOUND_ACTIVITY,
+                WOUND_VISIBLE_IMAGE_PKG, WOUND_VISIBLE_ACTIVITY,
                 WOUND_ASSESSMENT_REQ_CODE, containerAppParams);
 
         findViewById(R.id.woundQuestionnaireBtn).setOnClickListener(v -> {
             startActivityForResult(new Intent(this, ScreeningActivity.class),
                     WOUND_QUESTIONNAIRE_REQ_CODE);
         });
+
+        File patientFolder = new File(getWoundThermalMeasurementsDir(), "" + pInfo.getUsername());
+        patientFolder.mkdirs();
+        String thermalFileNamesWithoutExt = "thermal-" + THERMAL_DATE_FMT.format(new Date());
+
+        Bundle thermalParams = new Bundle();
+        markWithContainerParams(thermalParams);
+        thermalParams.putString(ARG_THERMAL_IMAGE_PATH,
+                new File(patientFolder, thermalFileNamesWithoutExt + ".jpg").getAbsolutePath());
+        thermalParams.putString(ARG_THERMAL_CSV_PATH,
+                new File(patientFolder, thermalFileNamesWithoutExt + ".csv").getAbsolutePath());
+        setOnClickListenerForMeasurements(R.id.woundThermalBtn,
+                WOUND_THERMAL_IMAGE_PKG, WOUND_THERMAL_ACTIVITY,
+                WOUND_THERMAL_REQ_CODE, thermalParams);
 
         Button doneBtn = findViewById(R.id.doneBtn);
         doneBtn.setOnClickListener(v -> finish());
