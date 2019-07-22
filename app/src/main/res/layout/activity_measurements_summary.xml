@@ -51,38 +51,6 @@
       android:layout_toRightOf="@+id/patientIdContainerLayout"
       android:src="@drawable/logo"/>
 
-    <RelativeLayout
-      android:id="@+id/visitsContainerLayout"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_above="@+id/patientIdContainerLayout"
-      android:layout_alignTop="@+id/patientNameLabelTv"
-      android:layout_toEndOf="@+id/patientIdContainerLayout"
-      android:layout_toLeftOf="@+id/imageView"
-      android:layout_toRightOf="@+id/patientIdContainerLayout"
-      android:layout_toStartOf="@+id/imageView"
-      android:gravity="center_vertical"
-      android:visibility="gone">
-
-      <TextView
-        android:id="@+id/numberOfVisitsTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="0"
-        android:textAppearance="@android:style/TextAppearance.Large"/>
-
-      <TextView
-        android:id="@+id/numberOfVisitsLabelTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/numberOfVisitsTextView"
-        android:layout_centerHorizontal="true"
-        android:text="Visits"/>
-    </RelativeLayout>
-
-
   </RelativeLayout>
 
   <ScrollView
