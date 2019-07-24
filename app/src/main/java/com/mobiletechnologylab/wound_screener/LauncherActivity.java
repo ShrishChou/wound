@@ -277,7 +277,7 @@ public class LauncherActivity extends AppCompatActivity {
 
         File patientFolder = new File(getWoundThermalMeasurementsDir(), "" + pInfo.getUsername());
         patientFolder.mkdirs();
-        String thermalFileNamesWithoutExt = "thermal-" + THERMAL_DATE_FMT.format(new Date());
+        String thermalFileNamesWithoutExt = "thermal-" + pInfo.getUsername() + "-" + THERMAL_DATE_FMT.format(new Date());
 
         Bundle thermalParams = new Bundle();
         markWithContainerParams(thermalParams);
