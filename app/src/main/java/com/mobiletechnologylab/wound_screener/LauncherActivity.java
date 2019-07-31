@@ -69,6 +69,7 @@ public class LauncherActivity extends AppCompatActivity {
     PatientProfileDbRow patientDbRow;
     PatientProfileDbRowInfo pInfo = new PatientProfileDbRowInfo();
     StorageSettings storageSettings;
+    String pod = "";
 
 
     @Override
@@ -138,6 +139,8 @@ public class LauncherActivity extends AppCompatActivity {
                     .fromJson(data.getStringExtra(ScreeningActivity.RESULT_ANSWERS),
                             WoundQuestionnaire.class);
             saveQuestionnaireAnswersToDb(answers);
+            pod = answers.getPod();
+            setOnClickListeners();
             return;
         }
 
@@ -262,13 +265,16 @@ public class LauncherActivity extends AppCompatActivity {
         status.setImageResource(android.R.drawable.presence_online);
     }
 
+    private static final String ARG_VISIBLE_POD = "Arg:VisiblePod";
+
     private void setOnClickListeners() {
-        Bundle containerAppParams = new Bundle();
-        markWithContainerParams(containerAppParams);
+        Bundle visibleParams = new Bundle();
+        markWithContainerParams(visibleParams);
+        visibleParams.putString(ARG_VISIBLE_POD, pod);
 
         setOnClickListenerForMeasurements(R.id.woundVisibleImageBtn,
                 WOUND_VISIBLE_IMAGE_PKG, WOUND_VISIBLE_ACTIVITY,
-                WOUND_ASSESSMENT_REQ_CODE, containerAppParams);
+                WOUND_ASSESSMENT_REQ_CODE, visibleParams);
 
         findViewById(R.id.woundQuestionnaireBtn).setOnClickListener(v -> {
             startActivityForResult(new Intent(this, ScreeningActivity.class),
@@ -277,7 +283,12 @@ public class LauncherActivity extends AppCompatActivity {
 
         File patientFolder = new File(getWoundThermalMeasurementsDir(), "" + pInfo.getUsername());
         patientFolder.mkdirs();
-        String thermalFileNamesWithoutExt = "thermal-" + pInfo.getUsername() + "-" + THERMAL_DATE_FMT.format(new Date());
+        String podString = "";
+        if (pod != null && !pod.isEmpty()) {
+            podString = pod + '-';
+        }
+        String thermalFileNamesWithoutExt = "thermal-" + pInfo.getUsername() + "-" +
+                podString + THERMAL_DATE_FMT.format(new Date());
 
         Bundle thermalParams = new Bundle();
         markWithContainerParams(thermalParams);
