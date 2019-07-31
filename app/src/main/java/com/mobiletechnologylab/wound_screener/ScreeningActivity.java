@@ -48,7 +48,7 @@ public class ScreeningActivity extends BaseQuestionnaireActivity<QUESTIONS_ID> {
 
         questions.put(QUESTIONS_ID.POD, new SingleChoiceQuestion(
                 "POD (2 of 2)",
-                "What is the POD?",
+                "What type of visit is this?",
                 new ArrayList<>(POD_TYPES.choices().keySet()),
                 (i) -> answers.setPod(POD_TYPES.values()[i].getCode())));
         return questions;
