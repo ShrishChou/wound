@@ -3,6 +3,7 @@ package com.mobiletechnologylab.wound_screener;
 import static com.mobiletechnologylab.apilib.apis.common.ApiDispatcherUtils.GSON;
 import static com.mobiletechnologylab.apilib.apis.common.ToastUtils.toast;
 import static com.mobiletechnologylab.storagelib.utils.FolderStructure.getWoundThermalMeasurementsDir;
+import static com.mobiletechnologylab.storagelib.utils.FolderStructure.getWoundVisibleMeasurementsDir;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.AllOf;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.GPS;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.STORAGE;
@@ -23,6 +24,8 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
+
 import com.mobiletechnologylab.apilib.apis.common.ApiDispatcherUtils;
 import com.mobiletechnologylab.apilib.apis.common.ApiSettings;
 import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.common.Metadata;
@@ -50,7 +53,7 @@ import java.util.Locale;
 public class LauncherActivity extends AppCompatActivity {
 
     private static final String TAG = LauncherActivity.class.getSimpleName();
-    private static final int WOUND_ASSESSMENT_REQ_CODE = 424;
+    private static final int WOUND_VISIBLE_REQ_CODE = 424;
     private static final int WOUND_QUESTIONNAIRE_REQ_CODE = 425;
     private static final int WOUND_THERMAL_REQ_CODE = 426;
 
@@ -70,6 +73,7 @@ public class LauncherActivity extends AppCompatActivity {
     PatientProfileDbRowInfo pInfo = new PatientProfileDbRowInfo();
     StorageSettings storageSettings;
     String pod = "";
+    Boolean kinyarwanda = true;
 
 
     @Override
@@ -79,6 +83,26 @@ public class LauncherActivity extends AppCompatActivity {
         storageSettings = new StorageSettings(this);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (kinyarwanda) {
+            TextView questionnaireLabel = findViewById(R.id.woundQuestionnaireAppNameTextView);
+            questionnaireLabel.setText("Ibibazo bisanzwe");
+            Button questionnaireStartButton = findViewById(R.id.woundQuestionnaireBtn);
+            questionnaireStartButton.setText("Tangira");
+
+            TextView visibleLabel = findViewById(R.id.woundAppNameTextView);
+            visibleLabel.setText("Ifoto igaragara");
+            Button visibleStartButton = findViewById(R.id.woundVisibleImageBtn);
+            visibleStartButton.setText("Tangira");
+
+            TextView thermalLabel = findViewById(R.id.woundThermalAppNameTextView);
+            thermalLabel.setText("Ifoto y' ubushyuhe");
+            Button thermalStartButton = findViewById(R.id.woundThermalBtn);
+            thermalStartButton.setText("Tangira");
+
+            Button doneButton = findViewById(R.id.doneBtn);
+            doneButton.setText("Turasoje");
+        }
     }
 
     @Override
@@ -127,7 +151,7 @@ public class LauncherActivity extends AppCompatActivity {
             return;
         }
 
-        if (requestCode == WOUND_ASSESSMENT_REQ_CODE) {
+        if (requestCode == WOUND_VISIBLE_REQ_CODE) {
             setUIResult(R.id.woundVisibleImageBtn, R.id.statusIndicatorWoundImageView);
             return;
         }
@@ -140,7 +164,6 @@ public class LauncherActivity extends AppCompatActivity {
                             WoundQuestionnaire.class);
             saveQuestionnaireAnswersToDb(answers);
             pod = answers.getPod();
-            setOnClickListeners();
             return;
         }
 
@@ -152,6 +175,9 @@ public class LauncherActivity extends AppCompatActivity {
 
     }
 
+    private static final String ARG_VISIBLE_SHARE_IMAGE = "Arg:VisibleShareImage";
+    private static final String ARG_VISIBLE_IMAGE_PATH = "Arg:VisibleImage";
+    private static final String ARG_VISIBLE_COLOR_PATH = "Arg:VisibleColor";
 
     private static final String ARG_THERMAL_IMAGE_PATH = "Arg:ThermalImage";
     private static final String ARG_THERMAL_CSV_PATH = "Arg:ThermalCsv";
@@ -265,37 +291,51 @@ public class LauncherActivity extends AppCompatActivity {
         status.setImageResource(android.R.drawable.presence_online);
     }
 
-    private static final String ARG_VISIBLE_POD = "Arg:VisiblePod";
-
     private void setOnClickListeners() {
+        String podString = "";
+        if (pod != null && !pod.isEmpty()) {
+            podString = pod + '-';
+        }
+        String timestamp = THERMAL_DATE_FMT.format(new Date());
+        String fileNameWithoutExtOrPrefix = pInfo.getUsername() + "-" +
+                podString + timestamp;
+
         Bundle visibleParams = new Bundle();
         markWithContainerParams(visibleParams);
-        visibleParams.putString(ARG_VISIBLE_POD, pod);
+        File visiblePatientFolder = new File(getWoundVisibleMeasurementsDir(), "" + pInfo.getUsername());
+        visiblePatientFolder.mkdirs();
+        String visibleImageFileName = "visible-" + fileNameWithoutExtOrPrefix + ".jpg";
+        String colorChartImageFileName = "color-" + fileNameWithoutExtOrPrefix + ".jpg";
+        visibleParams.putString(ARG_VISIBLE_IMAGE_PATH,
+                new File(visiblePatientFolder, visibleImageFileName).getAbsolutePath());
+        visibleParams.putString(ARG_VISIBLE_COLOR_PATH,
+                new File(visiblePatientFolder, colorChartImageFileName).getAbsolutePath());
+        if (pod != null && !pod.isEmpty() && pod.equals("p10")) {
+            visibleParams.putBoolean(ARG_VISIBLE_SHARE_IMAGE, true);
+        }
+        else {
+            visibleParams.putBoolean(ARG_VISIBLE_SHARE_IMAGE, false);
+        }
 
         setOnClickListenerForMeasurements(R.id.woundVisibleImageBtn,
                 WOUND_VISIBLE_IMAGE_PKG, WOUND_VISIBLE_ACTIVITY,
-                WOUND_ASSESSMENT_REQ_CODE, visibleParams);
+                WOUND_VISIBLE_REQ_CODE, visibleParams);
 
         findViewById(R.id.woundQuestionnaireBtn).setOnClickListener(v -> {
             startActivityForResult(new Intent(this, ScreeningActivity.class),
                     WOUND_QUESTIONNAIRE_REQ_CODE);
         });
 
-        File patientFolder = new File(getWoundThermalMeasurementsDir(), "" + pInfo.getUsername());
-        patientFolder.mkdirs();
-        String podString = "";
-        if (pod != null && !pod.isEmpty()) {
-            podString = pod + '-';
-        }
-        String thermalFileNamesWithoutExt = "thermal-" + pInfo.getUsername() + "-" +
-                podString + THERMAL_DATE_FMT.format(new Date());
-
         Bundle thermalParams = new Bundle();
         markWithContainerParams(thermalParams);
+        File thermalPatientFolder = new File(getWoundThermalMeasurementsDir(), "" + pInfo.getUsername());
+        thermalPatientFolder.mkdirs();
+        String thermalImageFileName = "thermal-" + fileNameWithoutExtOrPrefix + ".jpg";
+        String thermalCsvFileName = "thermal-" + fileNameWithoutExtOrPrefix + ".csv";
         thermalParams.putString(ARG_THERMAL_IMAGE_PATH,
-                new File(patientFolder, thermalFileNamesWithoutExt + ".jpg").getAbsolutePath());
+                new File(thermalPatientFolder, thermalImageFileName).getAbsolutePath());
         thermalParams.putString(ARG_THERMAL_CSV_PATH,
-                new File(patientFolder, thermalFileNamesWithoutExt + ".csv").getAbsolutePath());
+                new File(thermalPatientFolder, thermalCsvFileName).getAbsolutePath());
         setOnClickListenerForMeasurements(R.id.woundThermalBtn,
                 WOUND_THERMAL_IMAGE_PKG, WOUND_THERMAL_ACTIVITY,
                 WOUND_THERMAL_REQ_CODE, thermalParams);

@@ -2,6 +2,9 @@ package com.mobiletechnologylab.wound_screener;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.widget.Button;
+
 import com.mobiletechnologylab.storagelib.pulmonary.activities.NoOpActivity;
 import com.mobiletechnologylab.storagelib.wound.activities.BaseWoundLandingActivity;
 import com.mobiletechnologylab.storagelib.wound.activities.PatientProfileActivity;
