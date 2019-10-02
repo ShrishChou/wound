@@ -75,6 +75,7 @@ public class LauncherActivity extends AppCompatActivity {
     String pod = "";
     Boolean kinyarwanda = true;
 
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
