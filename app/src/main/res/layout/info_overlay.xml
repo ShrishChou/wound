@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/camera_overlay_layout"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <ImageButton
+      android:id="@+id/bcontinue"
+      android:layout_width="80dp"
+      android:layout_height="80dp"
+      android:background="@drawable/button_not_ready"
+      android:onClick="goForth"
+      android:text="Continue"
+      android:visibility="visible"
+      android:enabled="false"
+      android:layout_centerVertical="true"
+      android:layout_alignParentRight="true"
+      android:layout_alignParentEnd="true" />
+
+  <TextView
+      android:id="@+id/feedback_textView"
+      android:layout_width="510dp"
+      android:layout_height="wrap_content"
+      android:layout_alignParentTop="true"
+      android:layout_marginTop="371dp"
+      android:configChanges="orientation|keyboardHidden"
+      android:rotation="0"
+      android:text="Searching..."
+      android:textColor="#F59B00"
+      android:textSize="24sp" />
+
+  <ImageView
+    android:layout_width="match_parent"
+    android:layout_height="200px"
+    android:id="@+id/capture"
+    android:layout_alignRight="@+id/feedback_textView"
+    android:layout_alignParentEnd="false"
+    android:layout_alignParentBottom="true"
+    android:layout_marginBottom="25dp"
+    android:contentDescription="Shows image snippet"
+    android:scaleType="centerInside"
+    android:visibility="gone"
+    android:layout_alignLeft="@+id/feedback_textView"/>
+
+</RelativeLayout>

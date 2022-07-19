@@ -1,1 +1,2 @@
 include ':app', ':apilib', ':storagelib'
+include ':openCVLibrary343'

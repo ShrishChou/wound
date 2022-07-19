@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string-array name="pref_mode_entries">
+        <item>@string/pref_mode_label_anonymous</item>
+        <item>@string/pref_mode_label_clinical</item>
+    </string-array>
+
+    <string-array name="pref_mode_values">
+        <item>@string/pref_mode_anonymous</item>
+        <item>@string/pref_mode_clinical</item>
+    </string-array>
+
+    <string-array name="patient_gender">
+        <item></item>
+        <item>Female</item>
+        <item>Male</item>
+    </string-array>
+
+</resources>

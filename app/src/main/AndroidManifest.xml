@@ -1,56 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.mobiletechnologylab.wound_screener">
+  package="com.mobiletechnologylab.wound_imager">
 
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <!-- Required by apilib & storage lib -->
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+  <!-- Required by apilib & storage lib -->
+
+  <uses-permission android:name="android.permission.CAMERA"/>
+
+  <uses-feature android:name="android.hardware.camera"/>
+
   <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
   <uses-permission android:name="android.permission.FINE_LOCATION"/>
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
   <application
     android:allowBackup="true"
-    android:icon="@drawable/logo"
+    android:icon="@drawable/wi_logo"
     android:label="@string/app_name"
+    android:launchMode="singleTask"
+    android:requestLegacyExternalStorage="true"
     android:name="com.mobiletechnologylab.apilib.utils.App"
-    android:supportsRtl="true"
     android:theme="@style/AppTheme">
 
     <provider
       android:authorities="${applicationId}.provider"
       android:exported="false"
       android:grantUriPermissions="true"
-      android:name="android.support.v4.content.FileProvider">
+      android:name="androidx.core.content.FileProvider">
       <meta-data
         android:name="android.support.FILE_PROVIDER_PATHS"
         android:resource="@xml/provider_paths"/>
     </provider>
 
-
+    <!-- Splash screen at splashscreen -->
     <activity
-      android:configChanges="orientation|keyboardHidden|screenSize"
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
       android:label="@string/app_name"
-      android:name="com.mobiletechnologylab.wound_screener.LandingActivity"
-      android:screenOrientation="portrait">
-
+      android:name="com.mobiletechnologylab.wound_imager.ui.ActivitySplashScreen"
+      android:noHistory="true"
+      android:screenOrientation="portrait"
+      android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
-
 
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
 
     <activity
-      android:label="Measurements"
-      android:screenOrientation="portrait"
-      android:name="com.mobiletechnologylab.wound_screener.LauncherActivity"/>
+        android:label="Measurements"
+        android:screenOrientation="portrait"
+        android:name="com.mobiletechnologylab.wound_imager.LauncherActivity"/>
 
     <activity
-      android:label="Questionnaire"
-      android:screenOrientation="portrait"
-      android:name="com.mobiletechnologylab.wound_screener.ScreeningActivity"/>
+        android:label="Questionnaire"
+        android:screenOrientation="portrait"
+        android:name="com.mobiletechnologylab.wound_imager.ScreeningActivity"/>
 
+    <activity
+        android:label="Landing"
+        android:screenOrientation="portrait"
+        android:name="com.mobiletechnologylab.wound_imager.LandingActivity"/>
+
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:name="com.mobiletechnologylab.wound_imager.ui.ActivityLauncher"
+      android:screenOrientation="portrait"/>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:launchMode="singleTask"
+      android:name="com.mobiletechnologylab.wound_imager.image.ImageTargets"/>
+    <activity
+      android:label="Preview"
+      android:name="com.mobiletechnologylab.wound_imager.ui.ReviewImageActivity"
+      android:screenOrientation="landscape">
+    </activity>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:launchMode="singleTask"
+      android:name="com.mobiletechnologylab.wound_imager.history.ViewHistory"/>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:name="com.mobiletechnologylab.wound_imager.history.ShowHistory"/>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:name="com.mobiletechnologylab.wound_imager.history.LandingActivity"
+      android:screenOrientation="portrait">
+      <intent-filter>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:name="com.mobiletechnologylab.wound_imager.history.ResultsActivity"
+      android:screenOrientation="portrait"/>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:label="@string/activity_instructions_title"
+      android:name="com.mobiletechnologylab.wound_imager.history.InstructionsActivity"
+      android:noHistory="true"/>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:launchMode="singleTask"
+      android:name="com.mobiletechnologylab.wound_imager.history.OrchestratorActivity"
+      >
+      <intent-filter>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:name="com.mobiletechnologylab.wound_imager.GeneralSettingsActivity"
+      android:screenOrientation="portrait">
+    </activity>
+    <activity
+      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+      android:name="com.mobiletechnologylab.wound_imager.AboutActivity"
+      android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+        android:label="@string/title_activity_analysis"
+        android:name=".AnalysisActivity"
+        android:screenOrientation="portrait"/>
+    <activity
+        android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
+        android:name="com.mobiletechnologylab.wound_imager.MeasurementSelectActivity"
+        android:screenOrientation="portrait">
+    </activity>
+<!--    <activity-->
+<!--      android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"-->
+<!--      android:name="com.mobiletechnologylab.wound_imager.ContainerAppEntryActivity"-->
+<!--      >-->
+<!--      <intent-filter>-->
+<!--        <action android:name="com.mobiletechnologylab.wound_imager.ContainerAppEntryActivity"/>-->
+<!--        <category android:name="android.intent.category.DEFAULT"/>-->
+<!--      </intent-filter>-->
+<!--    </activity>-->
   </application>
 
 </manifest>

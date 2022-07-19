@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/processing"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  tools:context="com.mobiletechnologylab.wound_imager.history.ResultsActivity">
+
+
+  <TextView
+    android:id="@+id/measurement"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="30dp"
+    android:layout_marginBottom="20dp"
+    android:textAlignment="center"
+    android:gravity="center_horizontal"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:layout_alignParentTop="true"/>
+
+  <TextView
+    android:id="@+id/percent_normal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="30dp"
+    android:layout_marginBottom="20dp"
+    android:textAlignment="center"
+    android:gravity="center_horizontal"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:layout_below="@+id/measurement"/>
+
+  <TextView
+    android:id="@+id/best_measurement"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="30dp"
+    android:layout_marginBottom="20dp"
+    android:textAlignment="center"
+    android:gravity="center_horizontal"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:layout_below="@+id/percent_normal"/>
+
+  <TextView
+    android:id="@+id/percent_best"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="30dp"
+    android:layout_marginBottom="20dp"
+    android:textAlignment="center"
+    android:gravity="center_horizontal"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:layout_below="@+id/best_measurement"/>
+
+
+  <TextView
+    android:id="@+id/info"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="30dp"
+    android:layout_marginBottom="20dp"
+    android:textAlignment="center"
+    android:gravity="center_horizontal"
+    android:textAppearance="?android:attr/textAppearanceMedium"
+    android:layout_below="@+id/percent_best"/>
+
+  <Button
+    android:id="@+id/retest_button"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentLeft="true"
+    android:layout_marginBottom="16dp"
+    android:layout_marginLeft="10dp"
+    android:onClick="onRetest"
+    android:text="@string/retest_button_label"
+    android:textAppearance="@android:style/TextAppearance.Medium"
+    android:layout_alignParentStart="true"
+    android:layout_marginStart="10dp"/>
+
+  <Button
+    android:id="@+id/restart_button"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentLeft="true"
+    android:layout_marginBottom="16dp"
+    android:layout_marginLeft="10dp"
+    android:onClick="onRestart"
+    android:text="@string/restart_button_label"
+    android:textAppearance="@android:style/TextAppearance.Medium"
+    android:visibility="gone"
+    android:layout_alignParentStart="true"
+    android:layout_marginStart="10dp"/>
+
+  <Button
+    android:id="@+id/save_button"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginBottom="16dp"
+    android:onClick="onSave"
+    android:text="@string/save_button_label"
+    android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+  <Button
+    android:id="@+id/export_button"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginBottom="16dp"
+    android:onClick="onExport"
+    android:text="@string/export_button_label"
+    android:textAppearance="@android:style/TextAppearance.Medium"
+    android:visibility="gone"/>
+
+  <Button
+    android:id="@+id/exit_button"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentRight="true"
+    android:layout_marginBottom="16dp"
+    android:layout_marginRight="10dp"
+    android:onClick="onExit"
+    android:text="@string/exit_button_label"
+    android:textAppearance="@android:style/TextAppearance.Medium"
+    android:layout_alignParentEnd="true"
+    android:layout_marginEnd="10dp"/>
+</RelativeLayout>

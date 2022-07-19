@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  >
+  <LinearLayout
+    android:background="@color/BLACK_A080"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_vertical"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <LinearLayout
+      android:layout_width="100dp"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="12dp"
+      android:orientation="vertical">
+
+      <TextView
+        android:id="@+id/imageQuality"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Image Quality Check"
+        android:textColor="@android:color/white"
+        android:textAppearance="@android:style/TextAppearance.Small"/>
+      <TextView
+          android:id="@+id/imageQualityResults"
+          android:layout_width="100dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:text=""
+          android:textColor="@android:color/white"
+          android:textAppearance="@android:style/TextAppearance.Small"/>
+
+      <Button
+        android:id="@+id/continueBtn"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:padding="20dp"
+        android:text="Save And Continue"
+        android:textSize="11sp"/>
+
+      <Button
+        android:id="@+id/discardBtn"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_gravity=""
+        android:padding="15dp"
+        android:text="Discard and Retry"
+        android:textColor="@color/RED_500_A100"
+        android:textSize="11sp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:gravity="center">
+      <com.github.chrisbanes.photoview.PhotoView
+        android:id="@+id/previewIv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="@color/BLACK_A080"
+        android:visibility="visible"/>
+    </LinearLayout>
+  </LinearLayout>
+</layout>

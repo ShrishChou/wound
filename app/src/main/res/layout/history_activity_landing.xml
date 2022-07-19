@@ -1,0 +1,91 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  tools:context="com.mobiletechnologylab.wound_imager.history.LandingActivity">
+
+  <!-- The primary full-screen view. This can be replaced with whatever view
+       is needed to present your content, e.g. VideoView, SurfaceView,
+       TextureView, etc. -->
+
+  <!-- This FrameLayout insets its children based on system windows using
+       android:fitsSystemWindows. -->
+
+  <Space
+    android:id="@+id/centerSpace"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_centerVertical="true"/>
+
+  <Button
+    android:id="@+id/newCaseBtn"
+    android:layout_width="200dp"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/logoImageView"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="26dp"
+    android:text="@string/new_patient_button_label"
+    android:textAppearance="@android:style/TextAppearance.Medium"
+    android:visibility="gone"/>
+
+  <Button
+    android:id="@+id/existingCaseBtn"
+    android:layout_width="200dp"
+    android:layout_height="wrap_content"
+    android:layout_alignLeft="@+id/newCaseBtn"
+    android:layout_alignStart="@+id/newCaseBtn"
+    android:layout_below="@+id/newCaseBtn"
+    android:layout_marginTop="20dp"
+    android:text="@string/existing_patient_button_label"
+    android:textAppearance="@android:style/TextAppearance.Medium"
+    android:visibility="gone"/>
+
+  <ImageView
+    android:id="@+id/logoImageView"
+    android:layout_width="150dp"
+    android:layout_height="150dp"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="20dp"
+    android:adjustViewBounds="true"
+    android:contentDescription="@string/logo_contentDescription"
+    android:src="@mipmap/ic_launcher"/>
+
+  <TextView
+    android:id="@+id/versionTextView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:text="v??"
+    android:layout_below="@+id/logoImageView"
+    android:layout_centerHorizontal="true"/>
+
+  <Button
+    android:id="@+id/anonymous_patient_button"
+    android:layout_width="200dp"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/existingCaseBtn"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="26dp"
+    android:text="@string/start_button_label"
+    android:textAppearance="@android:style/TextAppearance.Medium"/>
+  <TextView
+    android:id="@+id/anonymous_mode_textView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/anonymous_patient_button"
+    android:layout_centerHorizontal="true"
+    android:text="@string/anonymous_mode_label"/>
+
+  <Button
+    android:id="@+id/settings_btn"
+    style="@android:style/Widget.DeviceDefault.Button.Borderless"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentRight="true"
+    android:text="@string/action_settings"
+    android:textColor="?android:attr/textColorLink"
+    android:visibility="gone"/>
+</RelativeLayout>

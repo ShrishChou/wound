@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="4dp">
+
+    <LinearLayout
+      android:id="@+id/headerLy"
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:orientation="vertical"
+      app:layout_constraintTop_toTopOf="parent">
+      <TextView
+        android:id="@+id/heading"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="4dp"
+        android:text="Select measurements for diagnosis"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textSize="18sp"
+        />
+    </LinearLayout>
+
+    <RelativeLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="10dp"
+      android:layout_marginRight="10dp"
+      app:layout_constraintBottom_toTopOf="@id/buttonLy">
+      <ProgressBar
+        android:id="@+id/loading"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"
+        android:visibility="visible"/>
+
+      <ListView
+        android:id="@+id/measurementsLv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        android:dividerHeight="2dp"
+        android:scrollbars="vertical"
+        android:visibility="visible"/>
+    </RelativeLayout>
+
+    <LinearLayout
+      android:id="@+id/buttonLy"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintBottom_toBottomOf="parent">
+
+      <Button
+        android:id="@+id/doneBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_gravity="center_horizontal"
+        android:text="Done"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+    </LinearLayout>
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

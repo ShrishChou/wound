@@ -1,0 +1,55 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:paddingBottom="@dimen/history_vertical_margin"
+  android:paddingLeft="@dimen/history_horizontal_margin"
+  android:paddingRight="@dimen/history_horizontal_margin"
+  android:paddingTop="@dimen/history_vertical_margin"
+  tools:context="com.mobiletechnologylab.wound_imager.history.ShowHistory">
+  <TextView
+    android:id="@+id/title"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_alignParentTop="true"
+    android:layout_marginTop="10dp"
+    android:text="Results"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:textSize="30dp"/>
+
+  <TextView
+    android:id="@+id/patient_id"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/title"
+    android:textSize="25sp"/>
+
+  <TextView
+    android:id="@+id/patient_name"
+    android:textSize="25sp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/patient_id"/>
+
+  <Button
+    android:id="@+id/export_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginBottom="16dp"
+    android:onClick="onExport"
+    android:text="Export"
+    />
+
+  <TextView
+    android:id="@+id/result_value"
+    android:textSize="25sp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/patient_id"
+    android:layout_above="@+id/export_button"
+    android:scrollbars="vertical"/>
+
+</RelativeLayout>
