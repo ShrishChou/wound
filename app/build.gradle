@@ -16,7 +16,7 @@ android {
     buildToolsVersion "28.0.3"
 
     defaultConfig {
-        applicationId "com.mobiletechnologylab.wound_imager"
+        applicationId "com.mobiletechnologylab.wound_screener_v2"
         minSdkVersion 19
         targetSdkVersion 30
         versionName androidGitVersion.name()
