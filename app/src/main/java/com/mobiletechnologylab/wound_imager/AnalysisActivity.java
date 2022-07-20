@@ -1,7 +1,6 @@
 package com.mobiletechnologylab.wound_imager;
 
 import static com.mobiletechnologylab.apilib.apis.common.ToastUtils.toast;
-import static com.mobiletechnologylab.apilib.apis.wound.diagnostics.run_analysis.clinician.ServerDiagnosticPrediction.nameProb;
 import static com.mobiletechnologylab.wound_imager.Commons.EXTRA_CLINICIAN_ID_KEY;
 import static com.mobiletechnologylab.wound_imager.Commons.EXTRA_PATIENT_ID_KEY;
 import static com.mobiletechnologylab.storagelib.core.BaseTable.LOCAL_DATA_COL;
@@ -120,14 +119,7 @@ import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
-
 public class AnalysisActivity extends AppCompatActivity {
-
-    public static final String KEY_FEATURE_VALUES = "featureValues";
-    public static final String KEY_SAVE_ENABLED = "mSaveEnabled";
-    public static final String KEY_OPTIONS = "options";
-    private static final String QUESTIONNAIRE_RESULTS_ACTIVITY = "com.mobiletechnologylab.pulmonary_questionnaire.activities.ResultsActivity";
-    private static final int SHOW_LOCAL_ANALYSIS = 543;
 
     PermissionsHandler permissionsHandler;
     WoundDb db2;
@@ -148,7 +140,6 @@ public class AnalysisActivity extends AppCompatActivity {
 
     static final int DIM_IMG_SIZE_X = 224;
     static final int DIM_IMG_SIZE_Y = 224;
-
     private static final int IMAGE_MEAN = 128;
     private static final float IMAGE_STD = 128.0f;
 
@@ -177,7 +168,6 @@ public class AnalysisActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
 
     @Override
     protected void onStart() {
@@ -247,20 +237,16 @@ public class AnalysisActivity extends AppCompatActivity {
         DiagnosticAdapter adapter = new DiagnosticAdapter(diagnostics, this);
         B.analysesLv.setAdapter(adapter);
         B.analysesLv.setOnItemClickListener((adapterView, view, i, l) -> {
-            showAnalysisDialog(diagnostics.get(i).getLocal());
+
+            if (diagnostics.get(i).isAvailableOnServer()) {
+                showCloudAnalysisDialog(diagnostics.get(i).getServer());
+            } else {
+                showLocalAnalysisDialog(diagnostics.get(i).getLocal());
+            }
         });
-//        B.analysesLv.setOnItemClickListener((adapterView, view, i, l) -> {
-//            if (diagnostics.get(i).isAvailableOnServer()) {
-//                showAnalysisDialog(diagnostics.get(i).getServer());
-//            } else {
-//                launchQuestionnaireResultsPage(
-//                        diagnostics.get(i).getLocal().getV1Prediction().getFeatures());
-//            }
-//
-//        });
     }
 
-    private void showAnalysisDialog(LocalDiagnosticPrediction localDiagnosticPrediction) {
+    private void showLocalAnalysisDialog(LocalDiagnosticPrediction localDiagnosticPrediction) {
         AlertDialog.Builder b = new AlertDialog.Builder(this);
         b.setTitle("Generated On " + localDiagnosticPrediction.getCreatedOn());
 
@@ -277,9 +263,32 @@ public class AnalysisActivity extends AppCompatActivity {
         LinearLayout layout = dialogView
                 .findViewById(com.mobiletechnologylab.storagelib.R.id.measurementsLinLayout);
 
-        addTextView(layout, "Wound Prediction: " + localDiagnosticPrediction.getWoundPrediction().getFeatures());
-        addTextView(layout, "Clinician: " + localDiagnosticPrediction.getClinician());
+        addTextView(layout, "Wound Prediction: " + localDiagnosticPrediction.getWoundPrediction().getTfliteVal());
+        addTextView(layout, "Clinician: " + storageSettings.getLoggedInClinicianLocalId());
         addTextView(layout, "Algorithm Version: " + localDiagnosticPrediction.getAlgoVersion());
+        b.show();
+    }
+
+    private void showCloudAnalysisDialog(ServerDiagnosticPrediction serverDiagnosticPrediction) {
+        AlertDialog.Builder b = new AlertDialog.Builder(this);
+        b.setTitle("Generated On " + serverDiagnosticPrediction.getCreatedOn());
+
+        b.setPositiveButton("Close", (d, i) -> {
+            d.dismiss();
+        });
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater
+                .inflate(com.mobiletechnologylab.storagelib.R.layout.dialog_pulmonary_questionnaire,
+                        null);
+        b.setView(dialogView);
+
+        LinearLayout layout = dialogView
+                .findViewById(com.mobiletechnologylab.storagelib.R.id.measurementsLinLayout);
+
+        addTextView(layout, "Has Wound Infection: " + serverDiagnosticPrediction.getHasWoundInfection());
+        addTextView(layout, "Clinician: " + storageSettings.getLoggedInClinicianLocalId());
+        addTextView(layout, "Algorithm Version: 1.0");
         b.show();
     }
 
@@ -406,132 +415,11 @@ public class AnalysisActivity extends AppCompatActivity {
         return Where(clauses.toArray(new Clause[clauses.size()]));
     }
 
-//    private PulmonaryQuestionnaireIFace getLatestQuestionnaire() {
-//        List<MeasurementDbRow> measurements = db.measurements()
-//                .getRows(getWhereClause(MeasurementType.QUESTIONNAIRE));
-//
-//        if (measurements == null) {
-//            return null;
-//        }
-//
-//        long recordedTime = 0;
-//        PulmonaryQuestionnaireIFace questionnaire = null;
-//        for (MeasurementDbRow m : measurements) {
-//            MeasurementDbRowInfo mInfo = new MeasurementDbRowInfo(m);
-//            Log.v(TAG, "Candidate: " + mInfo);
-//            if (mInfo.getPulmonaryQuestionnaire() == null) {
-//                continue;
-//            }
-//
-//            // Try local
-//            LocalMeasurement req = mInfo.getLocal();
-//            if (req != null) {
-//                if (req.getQuestionnaire() == null
-//                        || req.getQuestionnaire().getMeasurement().getMetadata() == null) {
-//                    continue;
-//                }
-//                Date d = ApiDispatcherUtils
-//                        .parseServerDate(req.getQuestionnaire().getMeasurement().getMetadata()
-//                                .getRecordedOn());
-//                if (d == null) {
-//                    Log.w(TAG, "Could not parse local date");
-//                    continue;
-//                }
-//                if (d.getTime() > recordedTime) {
-//                    questionnaire = mInfo.getPulmonaryQuestionnaire();
-//                    recordedTime = d.getTime();
-//                }
-//                continue;
-//            }
-//
-//            // Try Server
-//            if (mInfo.getServer() != null) {
-//                ServerDiagnosticMeasurement serverMeasurement = mInfo.getServer();
-//                if (serverMeasurement.getMetadata() == null) {
-//                    continue;
-//                }
-//                if (serverMeasurement.getMetadata().getRecordedOn() == null) {
-//                    continue;
-//                }
-//                Date d = ApiDispatcherUtils
-//                        .parseServerDate(mInfo.getServer().getMetadata().getRecordedOn());
-//                if (d == null) {
-//                    Log.w(TAG, "Could not parse server date");
-//                    continue;
-//                }
-//                if (d.getTime() > recordedTime) {
-//                    questionnaire = mInfo.getPulmonaryQuestionnaire();
-//                    recordedTime = d.getTime();
-//                }
-//            }
-//        }
-//        return questionnaire;
-//    }
-
-//    public PeakFlowMeterIFace getLatestPfm() {
-//        List<MeasurementDbRow> measurements = db.measurements()
-//                .getRows(getWhereClause(MeasurementType.PEAK_FLOW_METER));
-//
-//        if (measurements == null) {
-//            return null;
-//        }
-//
-//        long recordedTime = 0;
-//        PeakFlowMeterIFace pfm = null;
-//        for (MeasurementDbRow m : measurements) {
-//            MeasurementDbRowInfo mInfo = new MeasurementDbRowInfo(m);
-//            if (mInfo.getPeakFlowMeter() == null) {
-//                continue;
-//            }
-//
-//            // Try local
-//            LocalMeasurement req = mInfo.getLocal();
-//            if (req != null) {
-//                if (req.getPfm() == null || req.getPfm().getMeasurement().getMetadata() == null) {
-//                    continue;
-//                }
-//                Date d = ApiDispatcherUtils.parseServerDate(
-//                        req.getPfm().getMeasurement().getMetadata().getRecordedOn());
-//                if (d == null) {
-//                    continue;
-//                }
-//                if (d.getTime() > recordedTime) {
-//                    pfm = mInfo.getPeakFlowMeter();
-//                    recordedTime = d.getTime();
-//                }
-//                continue;
-//            }
-//
-//            // Try Server
-//            if (mInfo.getServer() != null) {
-//                ServerDiagnosticMeasurement serverMeasurement = mInfo.getServer();
-//                if (serverMeasurement.getMetadata() == null) {
-//                    continue;
-//                }
-//                if (serverMeasurement.getMetadata().getRecordedOn() == null) {
-//                    continue;
-//                }
-//                Date d = ApiDispatcherUtils
-//                        .parseServerDate(mInfo.getServer().getMetadata().getRecordedOn());
-//                if (d == null) {
-//                    continue;
-//                }
-//                if (d.getTime() > recordedTime) {
-//                    pfm = mInfo.getPeakFlowMeter();
-//                    recordedTime = d.getTime();
-//                }
-//            }
-//        }
-//        return pfm;
-//    }
-
-    /** Closes tflite to release resources. */
     public void close() {
         tflite.close();
         tflite = null;
     }
 
-    /** Memory-map the model file in Assets. */
     private MappedByteBuffer loadModelFile(Activity activity) throws IOException {
 //        AssetFileDescriptor fileDescriptor = activity.getAssets().openFd(MODEL_PATH);
 //        FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
@@ -543,7 +431,6 @@ public class AnalysisActivity extends AppCompatActivity {
         return tfliteModel;
     }
 
-    /** Writes Image data into a {@code ByteBuffer}. */
     private void convertBitmapToByteBuffer(Bitmap bitmap) {
         if (imgData == null) {
             return;
@@ -877,14 +764,14 @@ public class AnalysisActivity extends AppCompatActivity {
                 Log.d(TAG, "Time to run inference: " + Long.toString(endRun - startRun));
             }
 
-            probabilityBuffer.getFloatArray();
-            Log.d(TAG, Arrays.toString(probabilityBuffer.getFloatArray()));
+            float[] resultArr = probabilityBuffer.getFloatArray();
+            Log.d(TAG, Arrays.toString(resultArr));
 
             close();
             loading.dismiss();
 
             // create alert
-            CharSequence resultChar = "" + Arrays.toString(probabilityBuffer.getFloatArray());
+            CharSequence resultChar = "" + Arrays.toString(resultArr);
 
             new AlertDialog.Builder(this)
                     .setTitle("Analysis Result")
@@ -896,54 +783,18 @@ public class AnalysisActivity extends AppCompatActivity {
                     new LocalDiagnosticPrediction.Builder()
                             .setLocalPatientId(storageSettings.getSelectedPatientLocalId())
                             .setServerPatientId(pInfo.getServerId())
-                            .setCreatedOn(System.currentTimeMillis())
+                            .setCreatedTime(System.currentTimeMillis())
                             .setType(PredictionType.WOUND_PREDICTION)
                             .setAlgoVersion("1.0")
                             .setClinician("temp")
-                            .setWoundPrediction(new WoundPrediction("false"))
+                            .setWoundPrediction(new WoundPrediction("false", resultArr[0]))
                             .createLocalDiagnosticPrediction()));
             });
 
         }
         catch(IOException e){}
 
-//        HashMap<String, Double> features = new HashMap<>();
-//
-//        PulmonaryQuestionnaireIFace q = getLatestQuestionnaire();
-//        PeakFlowMeterIFace pfm = getLatestPfm();
-//        if (q == null) {
-//            displayNoQuestionnaireDialog();
-//            return;
-//        }
-//        if (pfm == null) {
-//            displayNoPfmDialog();
-//            return;
-//        }
-//        features.put("weightKg", toDouble(q.getWeightKg()));
-//        features.put("heightCm", toDouble(q.getHeightCm()));
-//        features.put("hasCOPDFamilyHistory", toDouble(q.getHasCOPDFamilyHistory()));
-//        features.put("hasSmoked", toDouble(q.getSmokes()));
-//        features.put("hasAllergyPersonalHistory", toDouble(q.getHasAllergyPersonalHistory()));
-//        features.put("hasAllergyFamilyHistory", toDouble(q.getHasAllergyFamilyHistory()));
-//        features.put("hasDrunkAlcohol", toDouble(q.getHasDrunkAlcohol()));
-//        features.put("hasBiomassCookingHistory", toDouble(q.getHasBiomassCookingHistory()));
-//        features.put("hasChewedTobacco", toDouble(q.getHasChewedTobacco()));
-//        features.put("hasCough", toDouble(q.getHasCough()));
-//        features.put("hasFever", toDouble(q.getHasFever()));
-//        features.put("hasChestPain", toDouble(q.getHasChestPain()));
-//        features.put("hasNasalSymptoms", toDouble(q.getHasNasalSymptoms()));
-//        features.put("numCigarettes", toDouble(q.getNumCigarettes()));
-//        features.put("mrcGrade", toDouble(q.getMrcGrade() - 1 /*server is +1*/));
-//
-//        db.diagnostics().insert(new DiagnosticDbRow(
-//                new LocalDiagnosticPrediction.Builder()
-//                        .setLocalPatientId(storageSettings.getSelectedPatientLocalId())
-//                        .setServerPatientId(pInfo.getServerId())
-//                        .setCreatedOn(System.currentTimeMillis())
-//                        .setType(PredictionType.V1PREDICTION)
-//                        .setV1Prediction(new V1Prediction(features))
-//                        .createLocalDiagnosticPrediction()));
-//        launchQuestionnaireResultsPage(features);
+        loadDiagnosticsFromDb();
     }
 
     private void testTFLiteDirectory() {
@@ -1046,56 +897,6 @@ public class AnalysisActivity extends AppCompatActivity {
         }
     }
 
-    private void launchQuestionnaireResultsPage(HashMap<String, Double> features) {
-//        Log.d(TAG, "Features: " + features);
-//        long patientID = storageSettings.getSelectedPatientLocalId();
-//        long clinicianId = storageSettings.getLoggedInClinicianLocalId();
-//
-//        // Open the results pane
-//        Intent intent = new Intent(QUESTIONNAIRE_RESULTS_ACTIVITY);
-//        intent.putExtra(EXTRA_PATIENT_ID_KEY, patientID);
-//        intent.putExtra(EXTRA_CLINICIAN_ID_KEY, clinicianId);
-//        intent.putExtra(KEY_FEATURE_VALUES, features);
-//
-//        Bundle extras = new Bundle();
-//        ContainerAppUtils.exportCredentialsForSubAppBundle(this, extras);
-//        intent.putExtras(extras);
-//
-//        Bundle options = new Bundle();
-//        options.putBoolean(KEY_SAVE_ENABLED, false);
-//        intent.putExtra(KEY_OPTIONS, options);
-//        runOnUiThread(() -> {
-//            startActivityForResult(intent, SHOW_LOCAL_ANALYSIS);
-//        });
-    }
-
-    private void displayNoPfmDialog() {
-        runOnUiThread(() -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Missing Peak Flow Meter Readings")
-                    .setMessage(
-                            "Local analysis uses the latest Peak Flow Meter readings for a patient "
-                                    + "to issue predictions. There are no readings "
-                                    + "for " + pInfo.getName() + " on this device. ")
-                    .setPositiveButton("Close", null)
-                    .show();
-        });
-
-    }
-
-    private void displayNoQuestionnaireDialog() {
-        runOnUiThread(() -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Missing Questionnaire")
-                    .setMessage(
-                            "Local analysis uses the latest Questionnaire answers for a patient "
-                                    + "to issue predictions. There is no questionnaire "
-                                    + "for " + pInfo.getName() + " on this device.")
-                    .setPositiveButton("Close", null)
-                    .show();
-        });
-    }
-
     private static final int MEASUREMENT_SELECT_REQ_CODE = 1001;
 
     private void doCloudAnalysis() {
@@ -1122,7 +923,6 @@ public class AnalysisActivity extends AppCompatActivity {
         new ClinicianRunAnalysisApi(this).callApi(
                 new com.mobiletechnologylab.apilib.apis.wound.diagnostics.run_analysis.clinician.PostRequest.Builder()
                         .setUsergroupId(storageSettings.getApiSettings().getActiveUserGroupId())
-                        .setPatientId(pInfo.getServerId())
                         .setMeasurementIds(new ArrayList<>(measurements.values()))
                         .createPostRequest(),
                 new ResponseCallback<ServerDiagnosticPrediction>(this) {
@@ -1151,10 +951,12 @@ public class AnalysisActivity extends AppCompatActivity {
 
     private void waitForAnalysisToComplete(ServerDiagnosticPrediction serverPred,
             ProgressDialog waiting) {
+        Log.d(TAG, serverPred.toString());
         Handler handler = new Handler();
         handler.postDelayed(() -> {
             new ClinicianViewAnalysesApi(this).callApi(new PostRequest.Builder()
-                    .setServerDiagnosisIds(Collections.singletonList(serverPred.getIdentity()))
+                    .setUsergroupIds(Collections.singletonList(storageSettings.getApiSettings().getActiveUserGroupId()))
+                    .setMeasurementIds(serverPred.getMeasurements())
                     .createPostRequest(), new ResponseCallback<PostResponse>(this) {
 
                 @Override
@@ -1171,7 +973,8 @@ public class AnalysisActivity extends AppCompatActivity {
 
                 @Override
                 public void onSuccess(PostResponse response) {
-                    if (isDiagReady(response.getResults().iterator().next())) {
+                    Log.d(TAG, response.toString());
+                    if (response.getResults().size() != 0) {
                         addNewServerPrediction(response.getResults().iterator().next());
                         runOnUiThread(() -> {
                             toast(AnalysisActivity.this, "Analysis complete");
@@ -1185,7 +988,7 @@ public class AnalysisActivity extends AppCompatActivity {
                     }
                 }
             });
-        }, 5000);
+        }, 20000);
     }
 
 
