@@ -11,6 +11,8 @@ import static com.mobiletechnologylab.storagelib.utils.dbclause.ClauseJoiner.Or;
 import static com.mobiletechnologylab.storagelib.utils.dbclause.JsonFieldLikeClause.JsonLike;
 import static com.mobiletechnologylab.storagelib.utils.dbclause.WhereClause.Where;
 import static com.mobiletechnologylab.wound_imager.MeasurementSelectActivity.extractSelectedMeasurements;
+import static com.mobiletechnologylab.wound_imager.MeasurementSelectActivity.extractSelectedImage;
+import static com.mobiletechnologylab.wound_imager.MeasurementSelectActivity.extractSelectedColor;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -36,6 +38,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
 
@@ -47,6 +50,9 @@ import com.mobiletechnologylab.apilib.apis.wound.diagnostics.run_analysis.clinic
 import com.mobiletechnologylab.apilib.apis.wound.diagnostics.view_analyses.questionnaire.clinician.ClinicianViewAnalysesApi;
 import com.mobiletechnologylab.apilib.apis.wound.diagnostics.view_analyses.questionnaire.clinician.PostRequest;
 import com.mobiletechnologylab.apilib.apis.wound.diagnostics.view_analyses.questionnaire.clinician.PostResponse;
+import com.mobiletechnologylab.storagelib.diabetes.tables.clinician_profiles.ClinicianProfileDbRow;
+import com.mobiletechnologylab.storagelib.diabetes.tables.clinician_profiles.ClinicianProfileDbRowInfo;
+import com.mobiletechnologylab.storagelib.interfaces.ClinicianProfileIface;
 import com.mobiletechnologylab.storagelib.wound.WoundDb;
 import com.mobiletechnologylab.wound_imager.databinding.ActivityAnalysisBinding;
 import com.mobiletechnologylab.storagelib.diabetes.tables.patient_profiles.PatientProfileDbRow;
@@ -123,16 +129,18 @@ public class AnalysisActivity extends AppCompatActivity {
 
     PermissionsHandler permissionsHandler;
     WoundDb db2;
+    WoundDb cliniciansDb;
     ActivityAnalysisBinding B;
     StorageSettings storageSettings;
     PatientProfileDbRowInfo pInfo;
+    ClinicianProfileDbRowInfo cInfo;
 
     ArrayList<DiagnosticDbRowInfo> diagnostics;
 
     private Bitmap woundImage;
     private Bitmap colorChartImage;
-    private String imagePath;
-    private String colorPath;
+
+    private boolean doCloudAnalysis = false;
 
     private static final String TAG = "AnalysisActivity";
 
@@ -153,10 +161,6 @@ public class AnalysisActivity extends AppCompatActivity {
         B = DataBindingUtil.setContentView(this, R.layout.activity_analysis);
         storageSettings = new StorageSettings(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        Intent thisIntent = getIntent();
-        imagePath = thisIntent.getStringExtra("woundImage");
-        colorPath = thisIntent.getStringExtra("colorChart");
     }
 
     @Override
@@ -174,10 +178,13 @@ public class AnalysisActivity extends AppCompatActivity {
         super.onStart();
         permissionsHandler = new PermissionsHandler(this, STORAGE, () -> {
             db2 = WoundDb.getInstance(this);
+            cliniciansDb = WoundDb.getCliniciansDb(this);
             AsyncTask.execute(() -> {
                 PatientProfileDbRow row = db2.patients()
                         .getRowWithLocalId(storageSettings.getSelectedPatientLocalId());
                 pInfo = new PatientProfileDbRowInfo(row);
+                ClinicianProfileDbRow crow = cliniciansDb.clinicians().getRowWithLocalId(storageSettings.getLoggedInClinicianLocalId());
+                cInfo = new ClinicianProfileDbRowInfo(crow);
                 runOnUiThread(this::setUpUi);
             });
         });
@@ -263,8 +270,8 @@ public class AnalysisActivity extends AppCompatActivity {
         LinearLayout layout = dialogView
                 .findViewById(com.mobiletechnologylab.storagelib.R.id.measurementsLinLayout);
 
-        addTextView(layout, "Wound Prediction: " + localDiagnosticPrediction.getWoundPrediction().getTfliteVal());
-        addTextView(layout, "Clinician: " + storageSettings.getLoggedInClinicianLocalId());
+        addTextView(layout, "Wound Prediction: " + localDiagnosticPrediction.getWoundPrediction().getInfected());
+        addTextView(layout, "Clinician: " + cInfo.getName());
         addTextView(layout, "Algorithm Version: " + localDiagnosticPrediction.getAlgoVersion());
         b.show();
     }
@@ -287,8 +294,9 @@ public class AnalysisActivity extends AppCompatActivity {
                 .findViewById(com.mobiletechnologylab.storagelib.R.id.measurementsLinLayout);
 
         addTextView(layout, "Has Wound Infection: " + serverDiagnosticPrediction.getHasWoundInfection());
-        addTextView(layout, "Clinician: " + storageSettings.getLoggedInClinicianLocalId());
-        addTextView(layout, "Algorithm Version: 1.0");
+        addTextView(layout, "Clinician: " + cInfo.getName());
+        addTextView(layout, "Error: " + serverDiagnosticPrediction.getError());
+        addTextView(layout, "Algorithm Version: " + serverDiagnosticPrediction.getServerVersion());
         b.show();
     }
 
@@ -387,7 +395,7 @@ public class AnalysisActivity extends AppCompatActivity {
                             dialogInterface.dismiss();
                             switch (i) {
                                 case 0:
-                                    doLocalAnalysis();
+                                    doLocalAnalysisHelper();
                                     break;
                                 case 1:
                                     doCloudAnalysis();
@@ -672,7 +680,17 @@ public class AnalysisActivity extends AppCompatActivity {
         return finalResized;
     }
 
-    private void doLocalAnalysis() {
+    private void doLocalAnalysisHelper() {
+        doCloudAnalysis = false;
+        if (cloudLoginRequired()) {
+            return;
+        }
+        startActivityForResult(new Intent(this, MeasurementSelectActivity.class),
+                MEASUREMENT_SELECT_REQ_CODE);
+    }
+
+    private void doLocalAnalysis(Map<Integer, String> images, Map<Integer, String> colors) {
+        OpenCVLoader.initDebug();
         ProgressDialog loading = ProgressDialog.show(this, "Running analysis", "Please wait...");
         Log.d(TAG, "local analysis!");
         try {
@@ -694,33 +712,63 @@ public class AnalysisActivity extends AppCompatActivity {
 //                        testTFLiteDirectory();
 //                    });
 
-            OpenCVLoader.initDebug();
-            Imgcodecs imageCodecs = new Imgcodecs();
-
-            // preprocessing pipeline
-            loading.setMessage("Preprocessing image..");
-
 //            String filename = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/resnet 2/resnet/infected/visible-63-p11-2019.10.15.12.25.23.jpg";
 //            Mat imageMat = imageCodecs.imread(filename);
 //            String colorFilename = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/color-patient1-2022.06.08.14.11.42.jpg";
 //            Mat colorMat = imageCodecs.imread(colorFilename);
+            List<String> imagePaths = new ArrayList<>(images.values());
+            List<String> colorPaths = new ArrayList<>(colors.values());
 
-            Mat imageMat = imageCodecs.imread(imagePath);
-            Mat colorMat = imageCodecs.imread(colorPath);
+            List<String> results = new ArrayList<>();
 
-            long startProcess = SystemClock.uptimeMillis();
-            Mat preprocessedMat = preprocessImage(imageMat, colorMat);
-            long endProcess = SystemClock.uptimeMillis();
-            Log.d(TAG, "Time to process image: " + Long.toString(endProcess - startProcess));
+            for(int i = 0; i < imagePaths.size(); i++) {
+                Log.d(TAG, imagePaths.get(i));
+                Log.d(TAG, colorPaths.get(i));
+                runTFLiteAnalysis(imagePaths.get(i), colorPaths.get(i), loading, results);
+            }
+
+            close();
+            loading.dismiss();
+
+            String appendedResults = "";
+
+            for (String s: results){
+                appendedResults += s + "\n";
+            }
+            CharSequence resultCharSeq = "" + appendedResults;
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Analysis Results")
+                    .setMessage(resultCharSeq)
+                    .show();
+
+        }
+        catch(IOException e){}
+
+        loadDiagnosticsFromDb();
+    }
+
+    private void runTFLiteAnalysis(String imagePath, String colorPath, ProgressDialog loading, List<String> results) {
+        Imgcodecs imageCodecs = new Imgcodecs();
+
+        Mat imageMat = imageCodecs.imread(imagePath);
+        Mat colorMat = imageCodecs.imread(colorPath);
+
+        // preprocessing pipeline
+        loading.setMessage("Preprocessing image..");
+        long startProcess = SystemClock.uptimeMillis();
+        Mat preprocessedMat = preprocessImage(imageMat, colorMat);
+        long endProcess = SystemClock.uptimeMillis();
+        Log.d(TAG, "Time to process image: " + Long.toString(endProcess - startProcess));
 //            Log.d(TAG, "processed image height: " + preprocessedMat.height());
 //            Log.d(TAG, "processed image width: " + preprocessedMat.width());
-            // write processed image to documents
-            imageCodecs.imwrite(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath() + "/processedImg.jpg", preprocessedMat);
-            loading.setMessage("Finished preprocessing..");
+        // write processed image to documents
+        imageCodecs.imwrite(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath() + "/processedImg.jpg", preprocessedMat);
+        loading.setMessage("Finished preprocessing..");
 //            Bitmap bmp = BitmapFactory.decodeFile(filename);
-            Bitmap bmp = Bitmap.createBitmap(preprocessedMat.cols(), preprocessedMat.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(preprocessedMat, bmp);
-            // method 1
+        Bitmap bmp = Bitmap.createBitmap(preprocessedMat.cols(), preprocessedMat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(preprocessedMat, bmp);
+        // method 1
 //            bmp = Bitmap.createScaledBitmap(bmp, 224, 224, false);
 //            convertBitmapToByteBuffer(bmp);
 //
@@ -741,45 +789,41 @@ public class AnalysisActivity extends AppCompatActivity {
 //            Log.d(TAG, "infected: " + floatMap.get("infected"));
 //            Log.d(TAG, "uninfected: " + floatMap.get("uninfected"));
 
-            //method 2
+        //method 2
 
 //            ImageProcessor imageProcessor =
 //                    new ImageProcessor.Builder()
 //                            .add(new ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
 //                            .build();
 
-            // tensorflow lite implementation
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(bmp);
+        // tensorflow lite implementation
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
 //            tensorImage = imageProcessor.process(tensorImage);
 
-            TensorBuffer probabilityBuffer =
-                    TensorBuffer.createFixedSize(new int[]{1, 6}, DataType.FLOAT32);
+        TensorBuffer probabilityBuffer =
+                TensorBuffer.createFixedSize(new int[]{1, 6}, DataType.FLOAT32);
 
-            if(null != tflite) {
-                loading.setMessage("Running model..");
-                long startRun = SystemClock.uptimeMillis();
-                tflite.run(tensorImage.getBuffer(), probabilityBuffer.getBuffer());
-                long endRun = SystemClock.uptimeMillis();
-                Log.d(TAG, "Time to run inference: " + Long.toString(endRun - startRun));
-            }
+        if(null != tflite) {
+            loading.setMessage("Running model..");
+            long startRun = SystemClock.uptimeMillis();
+            tflite.run(tensorImage.getBuffer(), probabilityBuffer.getBuffer());
+            long endRun = SystemClock.uptimeMillis();
+            Log.d(TAG, "Time to run inference: " + Long.toString(endRun - startRun));
+        }
 
-            float[] resultArr = probabilityBuffer.getFloatArray();
-            Log.d(TAG, Arrays.toString(resultArr));
+        float[] resultArr = probabilityBuffer.getFloatArray();
+        Log.d(TAG, Arrays.toString(resultArr));
 
-            close();
-            loading.dismiss();
+        boolean infected = resultArr[0] > 5*Math.pow(10, -7) ? true : false;
+        String infectedResult = infected ? "INFECTED" : "NOT-INFECTED";
 
-            // create alert
-            CharSequence resultChar = "" + Arrays.toString(resultArr);
+        // create alert
+        String resultChar = Arrays.toString(resultArr);
+        results.add(resultChar);
 
-            new AlertDialog.Builder(this)
-                    .setTitle("Analysis Result")
-                    .setMessage(resultChar)
-                    .show();
-
-            AsyncTask.execute(() -> {
-                db2.diagnostics().insert(new DiagnosticDbRow(
+        AsyncTask.execute(() -> {
+            db2.diagnostics().insert(new DiagnosticDbRow(
                     new LocalDiagnosticPrediction.Builder()
                             .setLocalPatientId(storageSettings.getSelectedPatientLocalId())
                             .setServerPatientId(pInfo.getServerId())
@@ -787,14 +831,10 @@ public class AnalysisActivity extends AppCompatActivity {
                             .setType(PredictionType.WOUND_PREDICTION)
                             .setAlgoVersion("1.0")
                             .setClinician("temp")
-                            .setWoundPrediction(new WoundPrediction("false", resultArr[0]))
+                            .setWoundPrediction(new WoundPrediction(infectedResult, resultArr[0]))
                             .createLocalDiagnosticPrediction()));
-            });
+        });
 
-        }
-        catch(IOException e){}
-
-        loadDiagnosticsFromDb();
     }
 
     private void testTFLiteDirectory() {
@@ -900,17 +940,25 @@ public class AnalysisActivity extends AppCompatActivity {
     private static final int MEASUREMENT_SELECT_REQ_CODE = 1001;
 
     private void doCloudAnalysis() {
+        doCloudAnalysis = true;
         if (cloudLoginRequired()) {
             return;
         }
-        startActivityForResult(new Intent(this, MeasurementSelectActivity.class),
+        Intent measurementSelect = new Intent(this, MeasurementSelectActivity.class);
+        measurementSelect.putExtra("cloud", true);
+        startActivityForResult(measurementSelect,
                 MEASUREMENT_SELECT_REQ_CODE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == MEASUREMENT_SELECT_REQ_CODE && resultCode == RESULT_OK) {
-            sendCloudAnalysisRequest(extractSelectedMeasurements(data));
+            if(doCloudAnalysis) {
+                sendCloudAnalysisRequest(extractSelectedMeasurements(data));
+            }
+            else {
+                doLocalAnalysis(extractSelectedImage(data), extractSelectedColor(data));
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -939,20 +987,25 @@ public class AnalysisActivity extends AppCompatActivity {
                                     "Analysis request sent to the cloud successfully.");
                             ProgressDialog waiting = ProgressDialog
                                     .show(AnalysisActivity.this, "Analyzing", "Please wait...");
-                            waitForAnalysisToComplete(response, waiting);
+                            // timeout before it stops running in seconds
+                            int timeout = 30;
+                            long start = System.currentTimeMillis();
+                            waitForAnalysisToComplete(response, waiting, start, timeout);
                         });
                     }
                 });
     }
 
     private boolean isDiagReady(ServerDiagnosticPrediction response) {
-        return response.getError() != null;
+        return response.getHasWoundInfection() != null;
     }
 
     private void waitForAnalysisToComplete(ServerDiagnosticPrediction serverPred,
-            ProgressDialog waiting) {
+            ProgressDialog waiting, long start, int timeout) {
         Log.d(TAG, serverPred.toString());
         Handler handler = new Handler();
+        // interval for checking view_analyses in seconds
+        int checking_interval = 2;
         handler.postDelayed(() -> {
             new ClinicianViewAnalysesApi(this).callApi(new PostRequest.Builder()
                     .setUsergroupIds(Collections.singletonList(storageSettings.getApiSettings().getActiveUserGroupId()))
@@ -974,7 +1027,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(PostResponse response) {
                     Log.d(TAG, response.toString());
-                    if (response.getResults().size() != 0) {
+                    if (isDiagReady(response.getResults().iterator().next())) {
                         addNewServerPrediction(response.getResults().iterator().next());
                         runOnUiThread(() -> {
                             toast(AnalysisActivity.this, "Analysis complete");
@@ -982,13 +1035,18 @@ public class AnalysisActivity extends AppCompatActivity {
                             loadDiagnosticsFromDb();
                         });
                     } else {
-                        runOnUiThread(() -> {
-                            waitForAnalysisToComplete(serverPred, waiting);
-                        });
+                        if(System.currentTimeMillis() < start + timeout * 1000) {
+                            runOnUiThread(() -> {
+                                waitForAnalysisToComplete(serverPred, waiting, start, timeout);
+                            });
+                        }
+                        else {
+                            Toast.makeText(getApplicationContext(), "No Result Received.", Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
             });
-        }, 20000);
+        }, checking_interval * 1000);
     }
 
 

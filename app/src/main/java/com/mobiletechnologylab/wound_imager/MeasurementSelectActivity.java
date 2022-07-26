@@ -3,6 +3,7 @@ package com.mobiletechnologylab.wound_imager;
 import static com.mobiletechnologylab.apilib.apis.common.ToastUtils.toast;
 import static com.mobiletechnologylab.storagelib.wound.activities.ViewMeasurementsActivity.getMeasurements;
 import static com.mobiletechnologylab.storagelib.utils.PermissionsHandler.STORAGE;
+import com.mobiletechnologylab.apilib.apis.wound.diagnostics.add_measurement.wound_image.PostRequest;
 
 import android.content.Intent;
 import androidx.databinding.DataBindingUtil;
@@ -15,6 +16,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+
 import com.mobiletechnologylab.wound_imager.databinding.ActivityMeasurementSelectBinding;
 import com.mobiletechnologylab.wound_imager.utils.MeasurementSelectAdapter;
 import com.mobiletechnologylab.wound_imager.utils.MeasurementSelectAdapter.CheckBoxClickedListener;
@@ -45,6 +48,9 @@ public class MeasurementSelectActivity extends AppCompatActivity implements
     public static final String RESULT_SELECTED_MEASUREMENTS = "Res:SELECTED_MEASUREMENTS";
 
     private HashMap<Integer, Long> selectedMeasurements;
+    private HashMap<Integer, String> selectedLocalImagePath;
+    private HashMap<Integer, String> selectedLocalColorPath;
+    private HashMap<Integer, Boolean> selectedUploaded;
 
 
     ActivityMeasurementSelectBinding B;
@@ -66,6 +72,11 @@ public class MeasurementSelectActivity extends AppCompatActivity implements
         storageSettings = new StorageSettings(this);
         B = DataBindingUtil.setContentView(this, R.layout.activity_measurement_select);
         selectedMeasurements = new HashMap<>();
+        selectedLocalImagePath = new HashMap<>();
+        selectedLocalColorPath = new HashMap<>();
+        selectedUploaded = new HashMap<>();
+        Intent intent = getIntent();
+        Boolean cloud = intent.getBooleanExtra("cloud", false);
         B.doneBtn.setOnClickListener(v -> {
             if (selectedMeasurements.isEmpty()) {
                 toast(this, getString(R.string.select_measurements));
@@ -73,13 +84,37 @@ public class MeasurementSelectActivity extends AppCompatActivity implements
             }
             Intent out = new Intent();
             out.putExtra(RESULT_SELECTED_MEASUREMENTS, selectedMeasurements);
-            setResult(RESULT_OK, out);
-            finish();
+            out.putExtra("selectedLocalImagePath", selectedLocalImagePath);
+            out.putExtra("selectedLocalColorPath", selectedLocalColorPath);
+            out.putExtra("selectedUploaded", selectedUploaded);
+            boolean allUploaded = true;
+            for(Boolean b: selectedUploaded.values()){
+                if(!b) allUploaded = false;
+            }
+            if(cloud && !allUploaded){
+                Toast.makeText(this, "Please upload all measurement files to server before running analysis!", Toast.LENGTH_LONG).show();
+            }
+            else {
+                setResult(RESULT_OK, out);
+                finish();
+            }
         });
     }
 
     public static Map<Integer, Long> extractSelectedMeasurements(Intent data) {
         return (Map<Integer, Long>) data.getSerializableExtra(RESULT_SELECTED_MEASUREMENTS);
+    }
+
+    public static Map<Integer, String> extractSelectedImage(Intent data) {
+        return (Map<Integer, String>) data.getSerializableExtra("selectedLocalImagePath");
+    }
+
+    public static Map<Integer, String> extractSelectedColor(Intent data) {
+        return (Map<Integer, String>) data.getSerializableExtra("selectedLocalColorPath");
+    }
+
+    public static Map<Integer, Boolean> extractSelectedUploaded(Intent data) {
+        return (Map<Integer, Boolean>) data.getSerializableExtra("selectedUploaded");
     }
 
     @Override
@@ -202,8 +237,15 @@ public class MeasurementSelectActivity extends AppCompatActivity implements
         if (checked) {
             selectedMeasurements
                     .put(key, measurementsDataset.get(i).getRow().serverId);
+            PostRequest measurementPost = measurementsDataset.get(i).getRow().getLocalData().getWoundImage();
+            selectedLocalImagePath.put(key, measurementPost.getMeasurement().getWoundImage().getImage());
+            selectedLocalColorPath.put(key, measurementPost.getMeasurement().getWoundImage().getColorChart());
+            selectedUploaded.put(key, measurementsDataset.get(i).isAvailableOnServer());
         } else {
             selectedMeasurements.remove(key);
+            selectedLocalImagePath.remove(key);
+            selectedLocalColorPath.remove(key);
+            selectedUploaded.remove(key);
         }
     }
 

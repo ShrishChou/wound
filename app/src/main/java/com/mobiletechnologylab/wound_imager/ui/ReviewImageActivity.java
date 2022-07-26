@@ -140,7 +140,7 @@ public class ReviewImageActivity extends AppCompatActivity {
         String lightCheck = badLighting ? "failed" : "passed";
         String colorCheck = badColor ? "failed" : "passed";
 
-        B.imageQualityResults.setText("Blur Check: " + blurCheck + "\nLighting Check: " + lightCheck + "\nColor Check: " + colorCheck);
+        B.imageQualityResults.setText("\nBlur Check: " + blurCheck + "\nLighting Check: " + lightCheck + "\nColor Check: " + colorCheck);
 
         if(!passed){
             B.continueBtn.setVisibility(View.GONE);
@@ -166,10 +166,10 @@ public class ReviewImageActivity extends AppCompatActivity {
                 setResult(RESULT_OK);
                 finish();
             }
-            Intent analysisPage = new Intent(this, AnalysisActivity.class);
-            analysisPage.putExtra("colorChart", colorChartPath);
-            analysisPage.putExtra("woundImage", imagePath);
-            startActivity(analysisPage);
+//            Intent analysisPage = new Intent(this, AnalysisActivity.class);
+//            analysisPage.putExtra("colorChart", colorChartPath);
+//            analysisPage.putExtra("woundImage", imagePath);
+//            startActivity(analysisPage);
         });
     }
 
