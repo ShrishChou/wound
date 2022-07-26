@@ -355,10 +355,10 @@ public class ReviewImageActivity extends AppCompatActivity {
 
                     if (color == "red") {
                         // A range: 0 to 40, B range: 0 to 40
-                        if(pixelSampleLAB[1] < 0 || pixelSampleLAB[1] > 40 || pixelSampleLAB[2] < -50 || pixelSampleLAB[2] > 40) return true;
+                        if(pixelSampleLAB[1] < 0 || pixelSampleLAB[1] > 50 || pixelSampleLAB[2] < -70 || pixelSampleLAB[2] > 40) return true;
                     } else if (color == "blue") {
                         // A range: -10 to 10, B range: -30 to 20
-                        if(pixelSampleLAB[1] < -10 || pixelSampleLAB[1] > 20 || pixelSampleLAB[2] < -30 || pixelSampleLAB[2] > 30) return true;
+                        if(pixelSampleLAB[1] < -10 || pixelSampleLAB[1] > 20 || pixelSampleLAB[2] < -30 || pixelSampleLAB[2] > 40) return true;
                     } else if (color == "yellow") {
                         // A range: -30 to 10, B range: 0 to 100
                         if(pixelSampleLAB[1] < -40 || pixelSampleLAB[1] > 10 || pixelSampleLAB[2] < -30 || pixelSampleLAB[2] > 100) return true;

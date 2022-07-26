@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <string name="app_name">Wound Imager</string>
+  <string name="app_name">Wound Screener V2</string>
   <string name="app_description">AR application for capturing wound images</string>
 
   <string name="button_start">Start</string>

@@ -699,18 +699,10 @@ public class AnalysisActivity extends AppCompatActivity {
 //            int inputCount = tflite.getInputTensorCount();
 //            int outputCount = tflite.getOutputTensorCount();
 //            Log.d(TAG, "input: " + inputCount + ", output: " + outputCount);
-//            labelList = loadLabelList(this);
-//            imgData = ByteBuffer.allocateDirect(4 * DIM_BATCH_SIZE * DIM_IMG_SIZE_X * DIM_IMG_SIZE_Y * DIM_PIXEL_SIZE);
-//            imgData.order(ByteOrder.nativeOrder());
-//            Log.d(TAG, "labelList.size: " + labelList.size());
-//            labelProbArray = new float[1][labelList.size()];
-//            filterLabelProbArray = new float[FILTER_STAGES][labelList.size()];
             Log.d(TAG, "Created a Tensorflow Lite Image Classifier.");
 
             // COMMENT OUT for whether to test on directory of uninfected/infected images
-//            AsyncTask.execute(() -> {
-//                        testTFLiteDirectory();
-//                    });
+//            testTFLiteDirectory();
 
 //            String filename = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/resnet 2/resnet/infected/visible-63-p11-2019.10.15.12.25.23.jpg";
 //            Mat imageMat = imageCodecs.imread(filename);
@@ -873,14 +865,8 @@ public class AnalysisActivity extends AppCompatActivity {
                 Log.d(TAG, filename);
                 Bitmap bmp = BitmapFactory.decodeFile(filename);
 
-//                ImageProcessor imageProcessor =
-//                        new ImageProcessor.Builder()
-//                                .add(new ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
-//                                .build();
-
                 TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
                 tensorImage.load(bmp);
-//                tensorImage = imageProcessor.process(tensorImage);
 
                 TensorBuffer probabilityBuffer =
                         TensorBuffer.createFixedSize(new int[]{1, 6}, DataType.FLOAT32);
@@ -904,14 +890,8 @@ public class AnalysisActivity extends AppCompatActivity {
                 Log.d(TAG, filename);
                 Bitmap bmp = BitmapFactory.decodeFile(filename);
 
-//                ImageProcessor imageProcessor =
-//                        new ImageProcessor.Builder()
-//                                .add(new ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
-//                                .build();
-
                 TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
                 tensorImage.load(bmp);
-//                tensorImage = imageProcessor.process(tensorImage);
 
                 TensorBuffer probabilityBuffer =
                         TensorBuffer.createFixedSize(new int[]{1, 6}, DataType.FLOAT32);
