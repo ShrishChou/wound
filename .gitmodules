@@ -1,6 +1,6 @@
 [submodule "apilib"]
 	path = apilib
-	url = https://bitbucket.org/fletcher2014/android_api_lib.git
+	url = git@bitbucket.org:fletcher2014/android_api_lib.git
 [submodule "storagelib"]
 	path = storagelib
-	url = https://bitbucket.org/fletcher2014/android_storage_lib.git
+	url = git@bitbucket.org:fletcher2014/android_storage_lib.git
